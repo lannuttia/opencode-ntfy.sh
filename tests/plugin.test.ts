@@ -307,15 +307,15 @@ describe("plugin", () => {
     expect(capturedRequest!.headers.get("Priority")).toBe("max");
   });
 
-  it("should substitute template variables in custom commands using lowercase hyphenated names", async () => {
+  it("should substitute template variables in custom commands using underscored names", async () => {
     vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
-    vi.stubEnv("OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD", 'echo "${project} is idle"');
+    vi.stubEnv("OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD", 'echo "${event} is done"');
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const mock$ = createMockShell((cmd) => {
-      if (cmd === 'echo "my-project is idle"') {
-        return { stdout: "my-project is idle", exitCode: 0 };
+      if (cmd === 'echo "session.idle is done"') {
+        return { stdout: "session.idle is done", exitCode: 0 };
       }
       return { stdout: "", exitCode: 1 };
     });
@@ -330,7 +330,7 @@ describe("plugin", () => {
     });
 
     expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("my-project is idle");
+    expect(capturedRequest!.headers.get("Title")).toBe("session.idle is done");
   });
 
   it("should use custom commands for permission.ask hook", async () => {

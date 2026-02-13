@@ -64,21 +64,20 @@ with their values. Unset variables are substituted with empty strings.
 
 | Variable | Available In | Description |
 |---|---|---|
-| `${project}` | All events | Project name derived from the working directory |
 | `${event}` | All events | The event type string (e.g., `session.idle`) |
 | `${time}` | All events | ISO 8601 timestamp |
 | `${error}` | `session.error` only | The error message (empty string for other events) |
-| `${permission-type}` | `permission.asked` only | The permission type (empty string for other events) |
-| `${permission-patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
+| `${permission_type}` | `permission.asked` only | The permission type (empty string for other events) |
+| `${permission_patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
 
 #### Example
 
 ```sh
 # Custom title for idle notifications
-export OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD='echo "${project} is done"'
+export OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD='echo "${event} is done"'
 
 # Custom message with timestamp
-export OPENCODE_NTFY_SESSION_ERROR_MESSAGE_CMD='echo "Error in ${project} at ${time}: ${error}"'
+export OPENCODE_NTFY_SESSION_ERROR_MESSAGE_CMD='echo "Error at ${time}: ${error}"'
 
 # Override priority for permission requests
 export OPENCODE_NTFY_PERMISSION_PRIORITY_CMD='echo "high"'

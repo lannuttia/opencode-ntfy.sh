@@ -41,18 +41,16 @@ async function resolveAndSend(
 }
 
 function buildVars(
-  project: string,
   event: string,
   time: string,
-  extra: Partial<Record<"error" | "permission-type" | "permission-patterns", string>> = {}
+  extra: Partial<Record<"error" | "permission_type" | "permission_patterns", string>> = {}
 ): Record<string, string> {
   return {
-    project,
     event,
     time,
     error: extra.error ?? "",
-    "permission-type": extra["permission-type"] ?? "",
-    "permission-patterns": extra["permission-patterns"] ?? "",
+    permission_type: extra.permission_type ?? "",
+    permission_patterns: extra.permission_patterns ?? "",
   };
 }
 
@@ -69,7 +67,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
     event: async ({ event }) => {
       if (event.type === "session.idle") {
         const time = new Date().toISOString();
-        const vars = buildVars(project, "session.idle", time);
+        const vars = buildVars("session.idle", time);
 
         await resolveAndSend($, config, "SESSION_IDLE", vars, {
           title: `${project} - Session Idle`,
@@ -83,7 +81,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
             ? String(error.data.message)
             : "";
         const time = new Date().toISOString();
-        const vars = buildVars(project, "session.error", time, { error: errorMsg });
+        const vars = buildVars("session.error", time, { error: errorMsg });
 
         await resolveAndSend($, config, "SESSION_ERROR", vars, {
           title: `${project} - Session Error`,
@@ -98,9 +96,9 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         const permissionType = props.permission || "";
         const patterns = props.patterns?.join(", ") || "";
         const time = new Date().toISOString();
-        const vars = buildVars(project, "permission.asked", time, {
-          "permission-type": permissionType,
-          "permission-patterns": patterns,
+        const vars = buildVars("permission.asked", time, {
+          permission_type: permissionType,
+          permission_patterns: patterns,
         });
         const detail = permissionType
           ? `\nPermission: ${permissionType}${patterns ? ` (${patterns})` : ""}`
@@ -119,9 +117,9 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
       const patterns = Array.isArray(permission.pattern)
         ? permission.pattern.join(", ")
         : permission.pattern || "";
-      const vars = buildVars(project, "permission.asked", time, {
-        "permission-type": permissionType,
-        "permission-patterns": patterns,
+      const vars = buildVars("permission.asked", time, {
+        permission_type: permissionType,
+        permission_patterns: patterns,
       });
 
       await resolveAndSend($, config, "PERMISSION", vars, {

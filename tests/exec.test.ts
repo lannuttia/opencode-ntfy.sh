@@ -94,12 +94,12 @@ describe("resolveField", () => {
 
     const result = await resolveField(
       $,
-      'echo "${project} - ${event}"',
-      { project: "my-project", event: "session.idle", time: "2026-01-01T00:00:00Z" },
+      'echo "${event} - ${time}"',
+      { event: "session.idle", time: "2026-01-01T00:00:00Z" },
       "fallback"
     );
 
-    expect(executedCommand).toBe('echo "my-project - session.idle"');
+    expect(executedCommand).toBe('echo "session.idle - 2026-01-01T00:00:00Z"');
     expect(result).toBe("custom title");
   });
 
@@ -112,16 +112,16 @@ describe("resolveField", () => {
 
     const result = await resolveField(
       $,
-      'echo "${project} ${error}"',
-      { project: "my-project" },
+      'echo "${event} ${error}"',
+      { event: "session.idle" },
       "fallback"
     );
 
-    expect(executedCommand).toBe('echo "my-project "');
+    expect(executedCommand).toBe('echo "session.idle "');
     expect(result).toBe("result");
   });
 
-  it("should substitute hyphenated variable names like ${permission-type}", async () => {
+  it("should substitute underscored variable names like ${permission_type}", async () => {
     let executedCommand = "";
     const $ = createMockShell((cmd) => {
       executedCommand = cmd;
@@ -130,8 +130,8 @@ describe("resolveField", () => {
 
     const result = await resolveField(
       $,
-      'echo "${permission-type}: ${permission-patterns}"',
-      { "permission-type": "file.write", "permission-patterns": "config.json" },
+      'echo "${permission_type}: ${permission_patterns}"',
+      { permission_type: "file.write", permission_patterns: "config.json" },
       "fallback"
     );
 

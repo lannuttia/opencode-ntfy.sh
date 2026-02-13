@@ -6,7 +6,7 @@ function substituteVariables(
   template: string,
   variables: Record<string, string>
 ): string {
-  return template.replace(/\$\{([\w-]+)\}/g, (_, name) => variables[name] ?? "");
+  return template.replace(/\$\{(\w+)\}/g, (_, name) => variables[name] ?? "");
 }
 
 export async function resolveField(

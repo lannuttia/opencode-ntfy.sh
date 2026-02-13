@@ -55,19 +55,18 @@ Commands are executed via the Bun `$` shell provided by the OpenCode plugin inpu
 
 | Variable | Available In | Description |
 |---|---|---|
-| `${project}` | All events | Project name derived from the working directory |
 | `${event}` | All events | The event type string (e.g., `session.idle`) |
 | `${time}` | All events | ISO 8601 timestamp |
 | `${error}` | `session.error` only | The error message (empty string for other events) |
-| `${permission-type}` | `permission.asked` only | The permission type (empty string for other events) |
-| `${permission-patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
+| `${permission_type}` | `permission.asked` only | The permission type (empty string for other events) |
+| `${permission_patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
 
 #### Execution Details
 
 - A new module `src/exec.ts` provides a `resolveField` function that:
   1. Takes the Bun `$` shell, a command template string (or `undefined`), a variables record, and a fallback default value
   2. If the command template is `undefined` or empty, returns the fallback
-   3. Substitutes all `${var-name}` placeholders in the command with values from the variables record
+   3. Substitutes all `${var_name}` placeholders in the command with values from the variables record
   4. Executes the substituted command via the Bun `$` shell, capturing stdout
   5. Returns the trimmed stdout if the command succeeds
   6. Returns the fallback value if the command fails (non-zero exit, exception, etc.)
