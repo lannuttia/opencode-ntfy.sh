@@ -21,6 +21,10 @@ export async function sendNotification(
     Tags: payload.tags,
   };
 
+  if (config.token) {
+    headers.Authorization = `Bearer ${config.token}`;
+  }
+
   await fetchFn(url, {
     method: "POST",
     headers,
