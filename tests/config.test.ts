@@ -11,4 +11,11 @@ describe("loadConfig", () => {
   it("should throw an error when NTFY_TOPIC is not set", () => {
     expect(() => loadConfig({})).toThrow("NTFY_TOPIC");
   });
+
+  it("should use default server and priority when not specified", () => {
+    const config = loadConfig({ NTFY_TOPIC: "test" });
+    expect(config.server).toBe("https://ntfy.sh");
+    expect(config.priority).toBe("default");
+    expect(config.token).toBeUndefined();
+  });
 });
