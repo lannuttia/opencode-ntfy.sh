@@ -120,4 +120,34 @@ describe("resolveField", () => {
     expect(executedCommand).toBe('echo "my-project "');
     expect(result).toBe("result");
   });
+
+  it("should return fallback when command exits with non-zero exit code", async () => {
+    const $ = createMockShell(() => {
+      return { stdout: "some output before failure", exitCode: 1 };
+    });
+
+    const result = await resolveField(
+      $,
+      "failing-command",
+      {},
+      "my-fallback"
+    );
+
+    expect(result).toBe("my-fallback");
+  });
+
+  it("should return fallback when command produces empty output", async () => {
+    const $ = createMockShell(() => {
+      return { stdout: "   \n", exitCode: 0 };
+    });
+
+    const result = await resolveField(
+      $,
+      "echo ''",
+      {},
+      "my-fallback"
+    );
+
+    expect(result).toBe("my-fallback");
+  });
 });
