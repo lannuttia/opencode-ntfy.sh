@@ -119,7 +119,37 @@ describe("CI workflow", () => {
     );
   });
 
-  it("should use NODE_AUTH_TOKEN for npm publish authentication", () => {
+  it("should use npm trusted publishing (OIDC) with id-token: write permission", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    expect(publishJob.permissions).toBeDefined();
+    expect(publishJob.permissions["id-token"]).toBe("write");
+    expect(publishJob.permissions.contents).toBe("read");
+  });
+
+  it("should NOT use NODE_AUTH_TOKEN or secrets.NPM_TOKEN for authentication", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+    const workflowYaml = readFileSync(WORKFLOW_PATH, "utf-8");
+
+    // Check that no step in the publish job uses NODE_AUTH_TOKEN
+    for (const step of publishJob.steps) {
+      if (step.env) {
+        expect(step.env).not.toHaveProperty("NODE_AUTH_TOKEN");
+      }
+    }
+
+    // Also verify secrets.NPM_TOKEN is not referenced anywhere in the publish job
+    // by checking the raw YAML for the publish section
+    const publishSection = workflowYaml.slice(
+      workflowYaml.indexOf("publish:")
+    );
+    expect(publishSection).not.toContain("secrets.NPM_TOKEN");
+    expect(publishSection).not.toContain("NPM_TOKEN");
+  });
+
+  it("should use --provenance flag with npm publish for trusted publishing", () => {
     const workflow = loadWorkflow();
     const publishJob = workflow.jobs.publish;
 
@@ -127,6 +157,6 @@ describe("CI workflow", () => {
       (s: any) => s.run && s.run.includes("npm publish")
     );
     expect(publishStep).toBeDefined();
-    expect(publishStep.env?.NODE_AUTH_TOKEN).toMatch(/secrets\.NPM_TOKEN/);
+    expect(publishStep.run).toContain("--provenance");
   });
 });
