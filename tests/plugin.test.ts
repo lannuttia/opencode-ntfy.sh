@@ -76,4 +76,16 @@ describe("plugin", () => {
     expect(options.body).toContain("session.error");
     expect(options.body).toContain("Something went wrong");
   });
+
+  it("should return empty hooks when NTFY_TOPIC is not set", async () => {
+    const mockFetch = vi.fn();
+
+    const hooks = await plugin({
+      directory: "/home/user/my-project",
+      env: {},
+      fetchFn: mockFetch,
+    });
+
+    expect(hooks.event).toBeUndefined();
+  });
 });
