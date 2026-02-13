@@ -7,7 +7,7 @@ function getProjectName(directory: string): string {
 }
 
 export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
-  if (!process.env.NTFY_TOPIC) {
+  if (!process.env.OPENCODE_NTFY_TOPIC) {
     return {};
   }
 

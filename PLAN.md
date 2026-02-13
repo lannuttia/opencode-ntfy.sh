@@ -62,3 +62,38 @@
 ## Phase 9: Fix Test Isolation
 
 - [x] Fix `plugin.test.ts` env isolation: stub `NTFY_TOPIC` to empty string in "not set" tests to prevent host env leakage
+
+## Phase 10: Rename Environment Variables to `OPENCODE_NTFY_*`
+
+- [ ] Rename `NTFY_TOPIC` → `OPENCODE_NTFY_TOPIC` in `src/config.ts` and all tests
+- [ ] Rename `NTFY_SERVER` → `OPENCODE_NTFY_SERVER` in `src/config.ts` and all tests
+- [ ] Rename `NTFY_TOKEN` → `OPENCODE_NTFY_TOKEN` in `src/config.ts` and all tests
+- [ ] Rename `NTFY_PRIORITY` → `OPENCODE_NTFY_PRIORITY` in `src/config.ts` and all tests
+- [ ] Ensure all tests pass and package builds cleanly
+
+## Phase 11: Add `priority` Field to `NotificationPayload`
+
+- [ ] Add optional `priority` field to `NotificationPayload` in `src/notify.ts`
+- [ ] Update `sendNotification` to use `payload.priority` when set, falling back to `config.priority`
+- [ ] Write tests for per-notification priority override
+- [ ] Ensure all tests pass and package builds cleanly
+
+## Phase 12: Implement `src/exec.ts` — Command Execution and Template Variable Substitution
+
+- [ ] Create `src/exec.ts` with a `resolveField` function that:
+  1. Takes the Bun `$` shell, a command template string (or `undefined`), a variables record, and a fallback default value
+  2. If the command template is `undefined` or empty, returns the fallback
+  3. Substitutes all `${VAR_NAME}` placeholders in the command with values from the variables record
+  4. Executes the substituted command via the Bun `$` shell, capturing stdout
+  5. Returns the trimmed stdout if the command succeeds
+  6. Returns the fallback value if the command fails (non-zero exit, exception, etc.)
+- [ ] Write tests for `resolveField` in `tests/exec.test.ts`
+- [ ] Ensure all tests pass and package builds cleanly
+
+## Phase 13: Wire Up Custom Notification Commands in Plugin
+
+- [ ] Build template variables record per event (PROJECT, EVENT, TIME, ERROR, PERMISSION_TYPE, PERMISSION_PATTERNS)
+- [ ] Use `resolveField` to resolve title, message, tags, and priority per event from environment variable commands
+- [ ] Use the correct per-event env var names (e.g., `OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD`)
+- [ ] Update `tests/plugin.test.ts` with tests for custom commands
+- [ ] Ensure all tests pass and package builds cleanly

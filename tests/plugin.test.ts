@@ -41,7 +41,7 @@ describe("plugin", () => {
   });
 
   it("should be an async function that returns hooks with an event handler", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     server.use(captureHandler("https://ntfy.sh/test-topic"));
 
     const hooks = await plugin(createMockInput());
@@ -52,8 +52,8 @@ describe("plugin", () => {
   });
 
   it("should send a notification when a session.idle event is received", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
-    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const hooks = await plugin(createMockInput());
@@ -75,8 +75,8 @@ describe("plugin", () => {
   });
 
   it("should send a notification with error message when a session.error event is received", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
-    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const hooks = await plugin(createMockInput());
@@ -103,14 +103,14 @@ describe("plugin", () => {
     expect(capturedRequest!.body).toContain("Something went wrong");
   });
 
-  it("should return empty hooks when NTFY_TOPIC is not set", async () => {
-    vi.stubEnv("NTFY_TOPIC", "");
+  it("should return empty hooks when OPENCODE_NTFY_TOPIC is not set", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "");
     const hooks = await plugin(createMockInput());
     expect(hooks.event).toBeUndefined();
   });
 
   it("should not send a notification for non-session events", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     server.use(captureHandler("https://ntfy.sh/test-topic"));
 
     const hooks = await plugin(createMockInput());
@@ -126,8 +126,8 @@ describe("plugin", () => {
   });
 
   it("should send a notification when a permission.ask hook is called", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
-    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const hooks = await plugin(createMockInput());
@@ -157,15 +157,15 @@ describe("plugin", () => {
     expect(capturedRequest!.body).toContain("Write to config.json");
   });
 
-  it("should not return permission.ask hook when NTFY_TOPIC is not set", async () => {
-    vi.stubEnv("NTFY_TOPIC", "");
+  it("should not return permission.ask hook when OPENCODE_NTFY_TOPIC is not set", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "");
     const hooks = await plugin(createMockInput());
     expect(hooks["permission.ask"]).toBeUndefined();
   });
 
   it("should send a notification when a permission.asked event is received via the event hook", async () => {
-    vi.stubEnv("NTFY_TOPIC", "test-topic");
-    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const hooks = await plugin(createMockInput());
