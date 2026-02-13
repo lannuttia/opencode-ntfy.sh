@@ -75,3 +75,9 @@ opencode-ntfy.sh/
 - Vitest for testing
 - No runtime dependencies beyond Node.js built-in `fetch`
 - Publishable as an npm package
+
+### CI
+This project will use GitHub Actions and needs to perform the following:
+- Run the tests
+- Build the package
+- If the pipeline run was triggered by the pushing of a version tag, then the module needs to be published to https://registry.npmjs.org/

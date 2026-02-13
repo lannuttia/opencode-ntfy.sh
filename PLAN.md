@@ -58,3 +58,10 @@
 - [x] Include event type, project name, timestamp, and permission title in the notification
 - [x] Write tests for the `permission.ask` hook in `tests/plugin.test.ts`
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 9: CI/CD with GitHub Actions
+
+- [ ] Create `.github/workflows/ci.yml` with test and build jobs that run on push and pull requests
+- [ ] Add publish job that publishes to https://registry.npmjs.org/ when a version tag is pushed
+- [ ] Write tests to verify CI workflow structure and correctness
+- [ ] Ensure all tests pass and package builds cleanly
