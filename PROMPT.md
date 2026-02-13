@@ -9,9 +9,10 @@ Build a TypeScript OpenCode plugin (`opencode-ntfy.sh`) that sends push notifica
 ## Instructions
 
 1. Read the PLAN.md to understand the current state of implementation.
-2. Pick the SINGLE highest priority incomplete item from PLAN.md and implement it.
-3. Ensure tests pass after your changes.
-4. Update PLAN.md with your progress and commit all changes with `git add -A && git commit -m "..."`.
+2. If all items in PLAN.md are complete and match this prompt's specifications, output exactly `<promise>Done</promise>` and stop. Do not make any changes.
+3. Pick the SINGLE highest priority incomplete item from PLAN.md and implement it.
+4. Ensure tests pass after your changes.
+5. Update PLAN.md with your progress and commit all changes with `git add -A && git commit -m "..."`.
 
 If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md to match this prompt.
 

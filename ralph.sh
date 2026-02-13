@@ -36,5 +36,10 @@ i=0
 while [ "$max" -eq 0 ] || [ "$i" -lt "$max" ]; do
   i=$((i + 1))
   echo "=== Ralph loop iteration $i${max:+ / $max} ==="
-  cat PROMPT.md | opencode run --agent tdd
+  output=$(cat PROMPT.md | opencode run --agent tdd)
+  echo "$output"
+  if echo "$output" | grep -qF '<promise>Done</promise>'; then
+    echo "=== All requirements met. Stopping. ==="
+    break
+  fi
 done
