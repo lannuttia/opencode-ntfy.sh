@@ -30,4 +30,10 @@ describe("loadConfig", () => {
     expect(config.token).toBe("my-secret-token");
     expect(config.priority).toBe("high");
   });
+
+  it("should throw when NTFY_PRIORITY is not a valid value", () => {
+    expect(() =>
+      loadConfig({ NTFY_TOPIC: "test", NTFY_PRIORITY: "invalid" })
+    ).toThrow("NTFY_PRIORITY");
+  });
 });
