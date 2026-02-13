@@ -41,6 +41,22 @@ export async function plugin(input: PluginInput): Promise<Hooks> {
           },
           fetchFn
         );
+      } else if (event.type === "session.error") {
+        const error = event.properties.error as
+          | { name: string; data: { message: string } }
+          | undefined;
+        const errorMsg = error?.data?.message
+          ? `\nError: ${error.data.message}`
+          : "";
+        await sendNotification(
+          config,
+          {
+            title: `${project} - Session Error`,
+            message: `Event: session.error\nProject: ${project}\nTime: ${new Date().toISOString()}${errorMsg}`,
+            tags: "warning",
+          },
+          fetchFn
+        );
       }
     },
   };
