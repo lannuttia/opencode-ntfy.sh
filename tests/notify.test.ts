@@ -4,13 +4,26 @@ import { setupServer } from "msw/node";
 import { sendNotification } from "../src/notify.js";
 import type { NtfyConfig } from "../src/config.js";
 
-// Capture request details for assertions
-let capturedRequest: {
+interface CapturedRequest {
   url: string;
   method: string;
-  headers: Record<string, string>;
+  headers: Headers;
   body: string;
-} | null = null;
+}
+
+let capturedRequest: CapturedRequest | null = null;
+
+function captureHandler(url: string) {
+  return http.post(url, async ({ request }) => {
+    capturedRequest = {
+      url: request.url,
+      method: request.method,
+      headers: request.headers,
+      body: await request.text(),
+    };
+    return HttpResponse.text("ok");
+  });
+}
 
 const server = setupServer();
 
@@ -23,21 +36,7 @@ afterAll(() => server.close());
 
 describe("sendNotification", () => {
   it("should send a POST request to the ntfy server with correct headers and body", async () => {
-    server.use(
-      http.post("https://ntfy.sh/my-topic", async ({ request }) => {
-        capturedRequest = {
-          url: request.url,
-          method: request.method,
-          headers: {
-            Title: request.headers.get("Title") ?? "",
-            Priority: request.headers.get("Priority") ?? "",
-            Tags: request.headers.get("Tags") ?? "",
-          },
-          body: await request.text(),
-        };
-        return HttpResponse.text("ok");
-      })
-    );
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
 
     const config: NtfyConfig = {
       topic: "my-topic",
@@ -54,26 +53,14 @@ describe("sendNotification", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.url).toBe("https://ntfy.sh/my-topic");
     expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.Title).toBe("Test Title");
-    expect(capturedRequest!.headers.Priority).toBe("default");
-    expect(capturedRequest!.headers.Tags).toBe("robot");
+    expect(capturedRequest!.headers.get("Title")).toBe("Test Title");
+    expect(capturedRequest!.headers.get("Priority")).toBe("default");
+    expect(capturedRequest!.headers.get("Tags")).toBe("robot");
     expect(capturedRequest!.body).toBe("Test body");
   });
 
   it("should not include Authorization header when token is not set", async () => {
-    server.use(
-      http.post("https://ntfy.sh/my-topic", async ({ request }) => {
-        capturedRequest = {
-          url: request.url,
-          method: request.method,
-          headers: {
-            Authorization: request.headers.get("Authorization") ?? "",
-          },
-          body: await request.text(),
-        };
-        return HttpResponse.text("ok");
-      })
-    );
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
 
     const config: NtfyConfig = {
       topic: "my-topic",
@@ -88,23 +75,11 @@ describe("sendNotification", () => {
     });
 
     expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.Authorization).toBe("");
+    expect(capturedRequest!.headers.get("Authorization")).toBeNull();
   });
 
   it("should include Authorization header when token is set", async () => {
-    server.use(
-      http.post("https://ntfy.sh/my-topic", async ({ request }) => {
-        capturedRequest = {
-          url: request.url,
-          method: request.method,
-          headers: {
-            Authorization: request.headers.get("Authorization") ?? "",
-          },
-          body: await request.text(),
-        };
-        return HttpResponse.text("ok");
-      })
-    );
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
 
     const config: NtfyConfig = {
       topic: "my-topic",
@@ -120,7 +95,7 @@ describe("sendNotification", () => {
     });
 
     expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.Authorization).toBe(
+    expect(capturedRequest!.headers.get("Authorization")).toBe(
       "Bearer my-secret-token"
     );
   });
