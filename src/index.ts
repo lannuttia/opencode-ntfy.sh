@@ -35,10 +35,10 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         });
       }
     },
-    "permission.ask": async (input) => {
+    "permission.ask": async (permission) => {
       await sendNotification(config, {
         title: `${project} - Permission Requested`,
-        message: `Event: permission.asked\nProject: ${project}\nTime: ${new Date().toISOString()}\nPermission: ${input.title}`,
+        message: `Event: permission.asked\nProject: ${project}\nTime: ${new Date().toISOString()}\nPermission: ${permission.title}`,
         tags: "lock",
       });
     },
