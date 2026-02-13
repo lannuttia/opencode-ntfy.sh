@@ -25,10 +25,10 @@
 
 ## Phase 5: Conform to OpenCode Plugin API
 
-- [ ] Rewrite `src/index.ts` to match the `@opencode-ai/plugin` `Plugin` type signature: `(input: PluginInput) => Promise<Hooks>`
-- [ ] Use the `event` hook in `Hooks` to listen for `session.idle` and `session.error` events from the `Event` union type
-- [ ] Derive project name from `PluginInput.directory` instead of per-event `cwd`
-- [ ] Extract error messages from `EventSessionError.properties.error` union type
-- [ ] Export the plugin as the default export
-- [ ] Rewrite `tests/plugin.test.ts` to test the new interface
-- [ ] Ensure all tests pass and package builds cleanly
+- [x] Rewrite `src/index.ts` to match the `@opencode-ai/plugin` `Plugin` type signature: `(input: PluginInput) => Promise<Hooks>`
+- [x] Use the `event` hook in `Hooks` to listen for `session.idle` and `session.error` events from the `Event` union type
+- [x] Derive project name from `PluginInput.directory` instead of per-event `cwd`
+- [x] Extract error messages from `EventSessionError.properties.error` union type
+- [x] Export the plugin as the default export
+- [x] Rewrite `tests/plugin.test.ts` to test the new interface
+- [x] Ensure all tests pass and package builds cleanly
