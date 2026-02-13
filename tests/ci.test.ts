@@ -158,7 +158,7 @@ describe("CI workflow", () => {
     expect(pkg.repository.url).toMatch(/github\.com\/lannuttia\/opencode-ntfy\.sh/);
   });
 
-  it("should use --provenance flag with npm publish for trusted publishing", () => {
+  it("should not use --provenance flag since provenance is automatic with trusted publishing", () => {
     const workflow = loadWorkflow();
     const publishJob = workflow.jobs.publish;
 
@@ -166,7 +166,7 @@ describe("CI workflow", () => {
       (s: any) => s.run && s.run.includes("npm publish")
     );
     expect(publishStep).toBeDefined();
-    expect(publishStep.run).toContain("--provenance");
+    expect(publishStep.run).not.toContain("--provenance");
   });
 
   it("should have a prepublishOnly script in package.json that builds the package", () => {
