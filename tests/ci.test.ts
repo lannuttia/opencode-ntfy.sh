@@ -149,6 +149,15 @@ describe("CI workflow", () => {
     expect(publishSection).not.toContain("NPM_TOKEN");
   });
 
+  it("should have a repository field in package.json matching the GitHub repository", () => {
+    const pkgPath = join(ROOT, "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+
+    expect(pkg.repository).toBeDefined();
+    expect(pkg.repository.type).toBe("git");
+    expect(pkg.repository.url).toMatch(/github\.com\/lannuttia\/opencode-ntfy\.sh/);
+  });
+
   it("should use --provenance flag with npm publish for trusted publishing", () => {
     const workflow = loadWorkflow();
     const publishJob = workflow.jobs.publish;
