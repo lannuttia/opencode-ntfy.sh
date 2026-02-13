@@ -43,3 +43,11 @@
 - [x] Update `tests/plugin.test.ts` to use real `PluginInput` shape and `vi.stubEnv`/`vi.stubGlobal`
 - [x] Add `tests/typecheck.test.ts` with compile-time type conformance checks
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 7: Cleanup & Hardening
+
+- [x] Exclude `_typecheck_*` temp files from `tsconfig.json` build to prevent polluting `dist/`
+- [x] Add `src/_typecheck_*` to `.gitignore` to prevent stray files from being committed
+- [x] Remove stray `src/_typecheck_plugin.ts` artifact and its `dist/` output
+- [x] Add test to verify `_typecheck_*` files are not compiled into `dist/`
+- [x] Ensure all tests pass and package builds cleanly

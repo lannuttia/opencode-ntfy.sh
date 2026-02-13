@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
-import { writeFileSync, unlinkSync } from "node:fs";
+import { writeFileSync, unlinkSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -26,6 +26,32 @@ void _check;
         cwd: ROOT,
         encoding: "utf-8",
       });
+    } finally {
+      unlinkSync(checkFile);
+    }
+  });
+
+  it("should not compile _typecheck_* files into dist when they exist in src", () => {
+    const checkFile = join(ROOT, "src", "_typecheck_build_test.ts");
+
+    writeFileSync(
+      checkFile,
+      `// Temporary file to verify build exclusion\nexport const _unused = true;\n`
+    );
+
+    try {
+      // Run a full build (with emit) to check dist output
+      execSync("npx tsc", {
+        cwd: ROOT,
+        encoding: "utf-8",
+      });
+
+      const distFiles = readdirSync(join(ROOT, "dist"));
+      const typecheckArtifacts = distFiles.filter((f) =>
+        f.startsWith("_typecheck_")
+      );
+
+      expect(typecheckArtifacts).toEqual([]);
     } finally {
       unlinkSync(checkFile);
     }
