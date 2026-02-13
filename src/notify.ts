@@ -25,9 +25,15 @@ export async function sendNotification(
     headers.Authorization = `Bearer ${config.token}`;
   }
 
-  await fetchFn(url, {
+  const response = await fetchFn(url, {
     method: "POST",
     headers,
     body: payload.message,
   });
+
+  if (!response.ok) {
+    throw new Error(
+      `ntfy request failed: ${response.status} ${response.statusText}`
+    );
+  }
 }

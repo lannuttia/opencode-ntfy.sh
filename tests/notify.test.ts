@@ -48,4 +48,24 @@ describe("sendNotification", () => {
     const [, options] = mockFetch.mock.calls[0];
     expect(options.headers.Authorization).toBe("Bearer my-secret-token");
   });
+
+  it("should throw when the server responds with a non-ok status", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue({ ok: false, status: 500, statusText: "Server Error" });
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "default",
+    };
+
+    await expect(
+      sendNotification(
+        config,
+        { title: "Test", message: "body", tags: "tag" },
+        mockFetch
+      )
+    ).rejects.toThrow("500");
+  });
 });
