@@ -26,9 +26,22 @@ export async function plugin(input: PluginInput): Promise<Hooks> {
 
   const config = loadConfig(env);
 
+  const fetchFn = input.fetchFn;
+  const project = getProjectName(input.directory);
+
   return {
     event: async ({ event }) => {
-      // Event handling will be implemented in subsequent increments
+      if (event.type === "session.idle") {
+        await sendNotification(
+          config,
+          {
+            title: `${project} - Session Idle`,
+            message: `Event: session.idle\nProject: ${project}\nTime: ${new Date().toISOString()}`,
+            tags: "hourglass_done",
+          },
+          fetchFn
+        );
+      }
     },
   };
 }
