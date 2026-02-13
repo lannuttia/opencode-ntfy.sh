@@ -1,0 +1,27 @@
+{
+  "name": "opencode-ntfy.sh",
+  "version": "0.1.0",
+  "description": "OpenCode plugin that sends push notifications via ntfy.sh",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}

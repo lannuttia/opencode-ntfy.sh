@@ -36,5 +36,5 @@ i=0
 while [ "$max" -eq 0 ] || [ "$i" -lt "$max" ]; do
   i=$((i + 1))
   echo "=== Ralph loop iteration $i${max:+ / $max} ==="
-  cat PROMPT.md | opencode -p --agent tdd
+  cat PROMPT.md | opencode run --agent tdd
 done
