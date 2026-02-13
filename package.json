@@ -19,6 +19,7 @@
   "devDependencies": {
     "@opencode-ai/plugin": "^1.1.63",
     "@types/node": "^25.2.3",
+    "msw": "^2.12.10",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   },
