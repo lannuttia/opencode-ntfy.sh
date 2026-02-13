@@ -31,5 +31,16 @@
     "type": "git",
     "url": "git+https://github.com/lannuttia/opencode-ntfy.sh.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "ntfy",
+    "ntfy.sh",
+    "notifications",
+    "push-notifications",
+    "ai",
+    "coding-assistant",
+    "plugin"
+  ]
 }
