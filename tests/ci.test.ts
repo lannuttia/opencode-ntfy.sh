@@ -169,6 +169,26 @@ describe("CI workflow", () => {
     expect(publishStep.run).not.toContain("--provenance");
   });
 
+  it("should use Node.js >= 22.14.0 in the publish job for npm OIDC trusted publishing", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    const setupNodeStep = publishJob.steps.find(
+      (s: any) => s.uses && s.uses.startsWith("actions/setup-node")
+    );
+    expect(setupNodeStep).toBeDefined();
+
+    const nodeVersion = String(setupNodeStep.with["node-version"]);
+    // Must be a specific version >= 22.14.0 (not just a major version like "22")
+    const parts = nodeVersion.split(".").map(Number);
+    expect(parts.length).toBeGreaterThanOrEqual(2);
+    const [major, minor] = parts;
+    const patch = parts[2] ?? 0;
+    const isAtLeast22_14_0 =
+      major > 22 || (major === 22 && (minor > 14 || (minor === 14 && patch >= 0)));
+    expect(isAtLeast22_14_0).toBe(true);
+  });
+
   it("should have a prepublishOnly script in package.json that builds the package", () => {
     const pkgPath = join(ROOT, "package.json");
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
