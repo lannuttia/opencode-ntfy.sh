@@ -41,6 +41,19 @@ export function plugin(
           fetchFn
         );
       },
+      "session.error": async (data: EventData) => {
+        const project = getProjectName(data.cwd);
+        const errorMsg = data.error ? `\nError: ${data.error}` : "";
+        await sendNotification(
+          config,
+          {
+            title: `${project} - Session Error`,
+            message: `Event: session.error\nProject: ${project}\nTime: ${new Date().toISOString()}${errorMsg}`,
+            tags: "warning",
+          },
+          fetchFn
+        );
+      },
     },
   };
 }
