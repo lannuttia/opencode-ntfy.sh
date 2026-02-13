@@ -7,4 +7,8 @@ describe("loadConfig", () => {
     const config = loadConfig(env);
     expect(config.topic).toBe("my-topic");
   });
+
+  it("should throw an error when NTFY_TOPIC is not set", () => {
+    expect(() => loadConfig({})).toThrow("NTFY_TOPIC");
+  });
 });

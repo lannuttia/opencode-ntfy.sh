@@ -8,8 +8,13 @@ export interface NtfyConfig {
 export function loadConfig(
   env: Record<string, string | undefined>
 ): NtfyConfig {
+  const topic = env.NTFY_TOPIC;
+  if (!topic) {
+    throw new Error("NTFY_TOPIC environment variable is required");
+  }
+
   return {
-    topic: env.NTFY_TOPIC!,
+    topic,
     server: "https://ntfy.sh",
     priority: "default",
   };
