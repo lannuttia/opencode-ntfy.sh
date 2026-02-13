@@ -65,3 +65,13 @@
 - [x] Add publish job that publishes to https://registry.npmjs.org/ when a version tag is pushed
 - [x] Write tests to verify CI workflow structure and correctness
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 10: Fix Test Isolation & Switch to npm Trusted Publishing (OIDC)
+
+- [x] Fix `plugin.test.ts` env isolation: stub `NTFY_TOPIC` to empty string in "not set" tests to prevent host env leakage
+- [x] Switch CI publish job from `NODE_AUTH_TOKEN`/`secrets.NPM_TOKEN` to npm trusted publishing (OIDC)
+- [x] Add `permissions: { id-token: write, contents: read }` to publish job
+- [x] Use `npm publish --provenance --access public` instead of plain `npm publish`
+- [x] Add `repository` field to `package.json` (required for provenance attestations)
+- [x] Update CI tests to validate trusted publishing requirements (no `NPM_TOKEN`, OIDC permissions, `--provenance` flag, repository field)
+- [x] Ensure all tests pass and package builds cleanly
