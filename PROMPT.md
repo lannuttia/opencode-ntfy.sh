@@ -83,8 +83,8 @@ This project will use GitHub Actions and needs to perform the following:
   - As part of the prepublish npm hook, the package should be built.
   - The package should be published to https://registry.npmjs.org/
 
-Publishing must use npm trusted publishing (OIDC) instead of a long-lived npm access token. This means:
+Publishing must use npm provenance attestation via OIDC. This means:
 - The publish job must have `permissions: id-token: write` and `contents: read`
-- The publish job must NOT use `NODE_AUTH_TOKEN` or `secrets.NPM_TOKEN`
+- The publish job must set `NODE_AUTH_TOKEN` to `secrets.NPM_TOKEN` (a granular access token configured in the repository secrets)
 - `package.json` must include a `repository` field matching the GitHub repository (required for provenance)
-- Provenance attestations are generated automatically with trusted publishing
+- The `npm publish` command must use `--provenance` to generate Sigstore-signed provenance attestations via the OIDC id-token
