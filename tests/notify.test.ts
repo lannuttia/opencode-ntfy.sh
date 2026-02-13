@@ -82,6 +82,45 @@ describe("sendNotification", () => {
     );
   });
 
+  it("should use payload.priority when set, overriding config.priority", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "default",
+    };
+
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+      priority: "high",
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("Priority")).toBe("high");
+  });
+
+  it("should use config.priority when payload.priority is not set", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "low",
+    };
+
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("Priority")).toBe("low");
+  });
+
   it("should throw when the server responds with a non-ok status", async () => {
     server.use(
       http.post("https://ntfy.sh/my-topic", () => {

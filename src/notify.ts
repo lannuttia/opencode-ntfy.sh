@@ -4,6 +4,7 @@ export interface NotificationPayload {
   title: string;
   message: string;
   tags: string;
+  priority?: string;
 }
 
 export async function sendNotification(
@@ -14,7 +15,7 @@ export async function sendNotification(
 
   const headers: Record<string, string> = {
     Title: payload.title,
-    Priority: config.priority,
+    Priority: payload.priority ?? config.priority,
     Tags: payload.tags,
   };
 
