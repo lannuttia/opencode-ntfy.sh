@@ -1,64 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { plugin } from "../src/index.js";
 
 describe("plugin", () => {
-  it("should send a notification on session.idle event", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-
-    const p = plugin(
-      {
-        NTFY_TOPIC: "test-topic",
-        NTFY_SERVER: "https://ntfy.example.com",
-      },
-      mockFetch
-    );
-
-    const idleHook = p.hooks["session.idle"];
-    expect(idleHook).toBeDefined();
-
-    await idleHook!({ cwd: "/home/user/my-project" });
-
-    expect(mockFetch).toHaveBeenCalledOnce();
-    const [url, options] = mockFetch.mock.calls[0];
-    expect(url).toBe("https://ntfy.example.com/test-topic");
-    expect(options.method).toBe("POST");
-    expect(options.headers.Title).toContain("my-project");
-    expect(options.body).toContain("session.idle");
-  });
-
-  it("should send a notification on session.error event with error message", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-
-    const p = plugin(
-      {
-        NTFY_TOPIC: "test-topic",
-        NTFY_SERVER: "https://ntfy.example.com",
-      },
-      mockFetch
-    );
-
-    const errorHook = p.hooks["session.error"];
-    expect(errorHook).toBeDefined();
-
-    await errorHook!({
-      cwd: "/home/user/my-project",
-      error: "Something went wrong",
+  it("should be an async function that returns hooks with an event handler", async () => {
+    const hooks = await plugin({
+      directory: "/home/user/my-project",
+      env: { NTFY_TOPIC: "test-topic" },
     });
 
-    expect(mockFetch).toHaveBeenCalledOnce();
-    const [url, options] = mockFetch.mock.calls[0];
-    expect(url).toBe("https://ntfy.example.com/test-topic");
-    expect(options.headers.Title).toContain("my-project");
-    expect(options.body).toContain("session.error");
-    expect(options.body).toContain("Something went wrong");
-  });
-
-  it("should return empty hooks when NTFY_TOPIC is not set", () => {
-    const mockFetch = vi.fn();
-
-    const p = plugin({}, mockFetch);
-
-    expect(p.hooks["session.idle"]).toBeUndefined();
-    expect(p.hooks["session.error"]).toBeUndefined();
+    expect(hooks).toBeDefined();
+    expect(hooks.event).toBeDefined();
+    expect(typeof hooks.event).toBe("function");
   });
 });

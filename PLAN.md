@@ -22,3 +22,13 @@
 
 - [x] Verify all tests pass
 - [x] Verify the package builds cleanly (added `@types/node` dev dependency)
+
+## Phase 5: Conform to OpenCode Plugin API
+
+- [ ] Rewrite `src/index.ts` to match the `@opencode-ai/plugin` `Plugin` type signature: `(input: PluginInput) => Promise<Hooks>`
+- [ ] Use the `event` hook in `Hooks` to listen for `session.idle` and `session.error` events from the `Event` union type
+- [ ] Derive project name from `PluginInput.directory` instead of per-event `cwd`
+- [ ] Extract error messages from `EventSessionError.properties.error` union type
+- [ ] Export the plugin as the default export
+- [ ] Rewrite `tests/plugin.test.ts` to test the new interface
+- [ ] Ensure all tests pass and package builds cleanly

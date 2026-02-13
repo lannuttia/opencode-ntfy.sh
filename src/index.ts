@@ -3,61 +3,32 @@ import { sendNotification } from "./notify.js";
 
 type FetchFn = typeof globalThis.fetch;
 
-interface EventData {
-  cwd: string;
-  error?: string;
+interface PluginInput {
+  directory: string;
+  env?: Record<string, string | undefined>;
+  fetchFn?: FetchFn;
 }
 
-interface PluginHooks {
-  "session.idle"?: (data: EventData) => Promise<void>;
-  "session.error"?: (data: EventData) => Promise<void>;
+interface Hooks {
+  event?: (input: { event: { type: string; properties: Record<string, unknown> } }) => Promise<void>;
 }
 
-interface Plugin {
-  hooks: PluginHooks;
+function getProjectName(directory: string): string {
+  return directory.split("/").pop() || directory;
 }
 
-function getProjectName(cwd: string): string {
-  return cwd.split("/").pop() || cwd;
-}
+export async function plugin(input: PluginInput): Promise<Hooks> {
+  const env = input.env ?? process.env;
 
-export function plugin(
-  env: Record<string, string | undefined> = process.env,
-  fetchFn?: FetchFn
-): Plugin {
   if (!env.NTFY_TOPIC) {
-    return { hooks: {} };
+    return {};
   }
 
   const config = loadConfig(env);
 
   return {
-    hooks: {
-      "session.idle": async (data: EventData) => {
-        const project = getProjectName(data.cwd);
-        await sendNotification(
-          config,
-          {
-            title: `${project} - Session Idle`,
-            message: `Event: session.idle\nProject: ${project}\nTime: ${new Date().toISOString()}`,
-            tags: "hourglass_done",
-          },
-          fetchFn
-        );
-      },
-      "session.error": async (data: EventData) => {
-        const project = getProjectName(data.cwd);
-        const errorMsg = data.error ? `\nError: ${data.error}` : "";
-        await sendNotification(
-          config,
-          {
-            title: `${project} - Session Error`,
-            message: `Event: session.error\nProject: ${project}\nTime: ${new Date().toISOString()}${errorMsg}`,
-            tags: "warning",
-          },
-          fetchFn
-        );
-      },
+    event: async ({ event }) => {
+      // Event handling will be implemented in subsequent increments
     },
   };
 }
