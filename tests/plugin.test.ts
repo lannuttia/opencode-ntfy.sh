@@ -88,4 +88,23 @@ describe("plugin", () => {
 
     expect(hooks.event).toBeUndefined();
   });
+
+  it("should not send a notification for non-session events", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+
+    const hooks = await plugin({
+      directory: "/home/user/my-project",
+      env: { NTFY_TOPIC: "test-topic" },
+      fetchFn: mockFetch,
+    });
+
+    await hooks.event!({
+      event: {
+        type: "message.updated",
+        properties: { info: {} },
+      },
+    });
+
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
 });
