@@ -33,6 +33,21 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           message: `Event: session.error\nProject: ${project}\nTime: ${new Date().toISOString()}${errorMsg}`,
           tags: "warning",
         });
+      } else if ((event.type as string) === "permission.asked") {
+        const props = (event as any).properties as {
+          permission?: string;
+          patterns?: string[];
+        };
+        const permission = props.permission || "";
+        const patterns = props.patterns?.join(", ") || "";
+        const detail = permission
+          ? `\nPermission: ${permission}${patterns ? ` (${patterns})` : ""}`
+          : "";
+        await sendNotification(config, {
+          title: `${project} - Permission Requested`,
+          message: `Event: permission.asked\nProject: ${project}\nTime: ${new Date().toISOString()}${detail}`,
+          tags: "lock",
+        });
       }
     },
     "permission.ask": async (permission) => {

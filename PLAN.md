@@ -54,7 +54,7 @@
 
 ## Phase 8: Add `permission.asked` Event Support
 
-- [ ] Add `permission.ask` hook to send a notification when the agent requests permission
-- [ ] Include event type, project name, timestamp, and permission title in the notification
-- [ ] Write tests for the `permission.ask` hook in `tests/plugin.test.ts`
-- [ ] Ensure all tests pass and package builds cleanly
+- [x] Add `permission.ask` hook to send a notification when the agent requests permission
+- [x] Include event type, project name, timestamp, and permission title in the notification
+- [x] Write tests for the `permission.ask` hook in `tests/plugin.test.ts`
+- [x] Ensure all tests pass and package builds cleanly

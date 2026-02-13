@@ -161,6 +161,37 @@ describe("plugin", () => {
     expect(hooks["permission.ask"]).toBeUndefined();
   });
 
+  it("should send a notification when a permission.asked event is received via the event hook", async () => {
+    vi.stubEnv("NTFY_TOPIC", "test-topic");
+    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "permission.asked",
+        properties: {
+          id: "perm-1",
+          permission: "file.write",
+          sessionID: "abc-123",
+          patterns: ["config.json"],
+          metadata: {},
+          always: ["config.json"],
+        },
+      } as any,
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
+    expect(capturedRequest!.method).toBe("POST");
+    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
+    expect(capturedRequest!.headers.get("Title")).toContain("Permission");
+    expect(capturedRequest!.body).toContain("permission.asked");
+    expect(capturedRequest!.body).toContain("my-project");
+    expect(capturedRequest!.body).toContain("file.write");
+  });
+
   it("should have a default export that is the same as the named plugin export", () => {
     expect(defaultExport).toBe(plugin);
   });
