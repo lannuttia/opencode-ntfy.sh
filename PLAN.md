@@ -59,33 +59,6 @@
 - [x] Write tests for the `permission.ask` hook in `tests/plugin.test.ts`
 - [x] Ensure all tests pass and package builds cleanly
 
-## Phase 9: CI/CD with GitHub Actions
-
-- [x] Create `.github/workflows/ci.yml` with test and build jobs that run on push and pull requests
-- [x] Add publish job that publishes to https://registry.npmjs.org/ when a version tag is pushed
-- [x] Write tests to verify CI workflow structure and correctness
-- [x] Ensure all tests pass and package builds cleanly
-
-## Phase 10: Fix Test Isolation & npm Provenance Attestation via OIDC
+## Phase 9: Fix Test Isolation
 
 - [x] Fix `plugin.test.ts` env isolation: stub `NTFY_TOPIC` to empty string in "not set" tests to prevent host env leakage
-- [x] Add `permissions: { id-token: write, contents: read }` to publish job
-- [x] ~~Use `npm publish --provenance --access public` instead of plain `npm publish`~~ (superseded by Phase 12)
-- [x] ~~Set `NODE_AUTH_TOKEN` to `secrets.NPM_TOKEN` in the publish step~~ (superseded by Phase 12)
-- [x] Add `repository` field to `package.json` (required for provenance attestations)
-- [x] ~~Update CI tests to validate OIDC permissions, `--provenance` flag, `NODE_AUTH_TOKEN`, and repository field~~ (superseded by Phase 12)
-- [x] Ensure all tests pass and package builds cleanly
-
-## Phase 11: Add prepublishOnly Hook
-
-- [x] Add `prepublishOnly` script to `package.json` that runs `npm run build` so the package is built automatically before publishing
-- [x] Write test to verify the `prepublishOnly` script exists and builds the package
-- [x] Ensure all tests pass and package builds cleanly
-
-## Phase 12: Switch to npm Trusted Publishing (OIDC)
-
-- [x] Remove `NODE_AUTH_TOKEN` / `secrets.NPM_TOKEN` from publish job (npm CLI auto-detects OIDC)
-- [x] Remove `--provenance` flag from `npm publish` (provenance is automatic with trusted publishing)
-- [x] Pin publish job Node.js version to `22.14.0` (npm CLI >= 11.5.1 required for OIDC)
-- [x] Update CI tests to validate no `NODE_AUTH_TOKEN`/`NPM_TOKEN`, no `--provenance`, and node-version >= 22.14.0
-- [x] Ensure all tests pass and package builds cleanly
