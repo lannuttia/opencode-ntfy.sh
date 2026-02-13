@@ -15,7 +15,8 @@ export function loadConfig(
 
   return {
     topic,
-    server: "https://ntfy.sh",
-    priority: "default",
+    server: env.NTFY_SERVER || "https://ntfy.sh",
+    token: env.NTFY_TOKEN,
+    priority: env.NTFY_PRIORITY || "default",
   };
 }

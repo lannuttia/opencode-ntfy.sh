@@ -18,4 +18,16 @@ describe("loadConfig", () => {
     expect(config.priority).toBe("default");
     expect(config.token).toBeUndefined();
   });
+
+  it("should use custom server, token, and priority from env", () => {
+    const config = loadConfig({
+      NTFY_TOPIC: "test",
+      NTFY_SERVER: "https://custom.ntfy.sh",
+      NTFY_TOKEN: "my-secret-token",
+      NTFY_PRIORITY: "high",
+    });
+    expect(config.server).toBe("https://custom.ntfy.sh");
+    expect(config.token).toBe("my-secret-token");
+    expect(config.priority).toBe("high");
+  });
 });
