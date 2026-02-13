@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
-import { writeFileSync, unlinkSync, existsSync, readdirSync } from "node:fs";
+import { writeFileSync, unlinkSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..");
