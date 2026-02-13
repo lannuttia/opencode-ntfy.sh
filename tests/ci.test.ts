@@ -75,4 +75,58 @@ describe("CI workflow", () => {
       runs.some((r: string) => r.includes("npm ci") || r.includes("npm install"))
     ).toBe(true);
   });
+
+  it("should have a publish job that runs only on version tag pushes", () => {
+    const workflow = loadWorkflow();
+    expect(workflow.jobs.publish).toBeDefined();
+
+    const publishJob = workflow.jobs.publish;
+    expect(publishJob["if"]).toMatch(/startsWith.*refs\/tags\/v/);
+  });
+
+  it("should have the publish job depend on test and build jobs", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    expect(publishJob.needs).toBeDefined();
+    const needs = Array.isArray(publishJob.needs)
+      ? publishJob.needs
+      : [publishJob.needs];
+    expect(needs).toContain("test");
+    expect(needs).toContain("build");
+  });
+
+  it("should configure the publish job to publish to the npm registry", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    const runs = publishJob.steps
+      .filter((s: any) => s.run)
+      .map((s: any) => s.run);
+    expect(runs.some((r: string) => r.includes("npm publish"))).toBe(true);
+  });
+
+  it("should configure the publish job with the npm registry URL", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    const setupNodeStep = publishJob.steps.find(
+      (s: any) => s.uses && s.uses.startsWith("actions/setup-node")
+    );
+    expect(setupNodeStep).toBeDefined();
+    expect(setupNodeStep.with["registry-url"]).toBe(
+      "https://registry.npmjs.org"
+    );
+  });
+
+  it("should use NODE_AUTH_TOKEN for npm publish authentication", () => {
+    const workflow = loadWorkflow();
+    const publishJob = workflow.jobs.publish;
+
+    const publishStep = publishJob.steps.find(
+      (s: any) => s.run && s.run.includes("npm publish")
+    );
+    expect(publishStep).toBeDefined();
+    expect(publishStep.env?.NODE_AUTH_TOKEN).toMatch(/secrets\.NPM_TOKEN/);
+  });
 });
