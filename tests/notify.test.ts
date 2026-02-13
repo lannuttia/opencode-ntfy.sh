@@ -1,35 +1,17 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
 import { sendNotification } from "../src/notify.js";
 import type { NtfyConfig } from "../src/config.js";
-
-interface CapturedRequest {
-  url: string;
-  method: string;
-  headers: Headers;
-  body: string;
-}
-
-let capturedRequest: CapturedRequest | null = null;
-
-function captureHandler(url: string) {
-  return http.post(url, async ({ request }) => {
-    capturedRequest = {
-      url: request.url,
-      method: request.method,
-      headers: request.headers,
-      body: await request.text(),
-    };
-    return HttpResponse.text("ok");
-  });
-}
-
-const server = setupServer();
+import {
+  server,
+  captureHandler,
+  capturedRequest,
+  resetCapturedRequest,
+} from "./msw-helpers.js";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
-  capturedRequest = null;
+  resetCapturedRequest();
   server.resetHandlers();
 });
 afterAll(() => server.close());
