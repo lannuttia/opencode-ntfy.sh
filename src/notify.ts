@@ -6,12 +6,9 @@ export interface NotificationPayload {
   tags: string;
 }
 
-type FetchFn = typeof globalThis.fetch;
-
 export async function sendNotification(
   config: NtfyConfig,
-  payload: NotificationPayload,
-  fetchFn: FetchFn = globalThis.fetch
+  payload: NotificationPayload
 ): Promise<void> {
   const url = `${config.server}/${config.topic}`;
 
@@ -25,7 +22,7 @@ export async function sendNotification(
     headers.Authorization = `Bearer ${config.token}`;
   }
 
-  const response = await fetchFn(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers,
     body: payload.message,

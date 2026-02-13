@@ -1,22 +1,31 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { sendNotification } from "../src/notify.js";
 import type { NtfyConfig } from "../src/config.js";
 
 describe("sendNotification", () => {
-  it("should send a POST request to the ntfy server with correct headers and body", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+  let mockFetch: ReturnType<typeof vi.fn>;
 
+  beforeEach(() => {
+    mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("should send a POST request to the ntfy server with correct headers and body", async () => {
     const config: NtfyConfig = {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "default",
     };
 
-    await sendNotification(
-      config,
-      { title: "Test Title", message: "Test body", tags: "robot" },
-      mockFetch
-    );
+    await sendNotification(config, {
+      title: "Test Title",
+      message: "Test body",
+      tags: "robot",
+    });
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [url, options] = mockFetch.mock.calls[0];
@@ -30,8 +39,6 @@ describe("sendNotification", () => {
   });
 
   it("should include Authorization header when token is set", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-
     const config: NtfyConfig = {
       topic: "my-topic",
       server: "https://ntfy.sh",
@@ -39,20 +46,22 @@ describe("sendNotification", () => {
       token: "my-secret-token",
     };
 
-    await sendNotification(
-      config,
-      { title: "Test", message: "body", tags: "tag" },
-      mockFetch
-    );
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+    });
 
     const [, options] = mockFetch.mock.calls[0];
     expect(options.headers.Authorization).toBe("Bearer my-secret-token");
   });
 
   it("should throw when the server responds with a non-ok status", async () => {
-    const mockFetch = vi
-      .fn()
-      .mockResolvedValue({ ok: false, status: 500, statusText: "Server Error" });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Server Error",
+    });
 
     const config: NtfyConfig = {
       topic: "my-topic",
@@ -61,11 +70,11 @@ describe("sendNotification", () => {
     };
 
     await expect(
-      sendNotification(
-        config,
-        { title: "Test", message: "body", tags: "tag" },
-        mockFetch
-      )
+      sendNotification(config, {
+        title: "Test",
+        message: "body",
+        tags: "tag",
+      })
     ).rejects.toThrow("500");
   });
 });
