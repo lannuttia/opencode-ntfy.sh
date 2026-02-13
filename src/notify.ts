@@ -1,0 +1,29 @@
+import type { NtfyConfig } from "./config.js";
+
+export interface NotificationPayload {
+  title: string;
+  message: string;
+  tags: string;
+}
+
+type FetchFn = typeof globalThis.fetch;
+
+export async function sendNotification(
+  config: NtfyConfig,
+  payload: NotificationPayload,
+  fetchFn: FetchFn = globalThis.fetch
+): Promise<void> {
+  const url = `${config.server}/${config.topic}`;
+
+  const headers: Record<string, string> = {
+    Title: payload.title,
+    Priority: config.priority,
+    Tags: payload.tags,
+  };
+
+  await fetchFn(url, {
+    method: "POST",
+    headers,
+    body: payload.message,
+  });
+}
