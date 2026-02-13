@@ -124,6 +124,43 @@ describe("plugin", () => {
     expect(capturedRequest).toBeNull();
   });
 
+  it("should send a notification when a permission.ask hook is called", async () => {
+    vi.stubEnv("NTFY_TOPIC", "test-topic");
+    vi.stubEnv("NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    expect(hooks["permission.ask"]).toBeDefined();
+    expect(typeof hooks["permission.ask"]).toBe("function");
+
+    const permissionInput = {
+      id: "perm-1",
+      type: "file.write",
+      sessionID: "abc-123",
+      messageID: "msg-1",
+      title: "Write to config.json",
+      metadata: {},
+      time: { created: Date.now() },
+    };
+
+    await hooks["permission.ask"]!(permissionInput, { status: "ask" });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
+    expect(capturedRequest!.method).toBe("POST");
+    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
+    expect(capturedRequest!.headers.get("Title")).toContain("Permission");
+    expect(capturedRequest!.body).toContain("permission.asked");
+    expect(capturedRequest!.body).toContain("my-project");
+    expect(capturedRequest!.body).toContain("Write to config.json");
+  });
+
+  it("should not return permission.ask hook when NTFY_TOPIC is not set", async () => {
+    const hooks = await plugin(createMockInput());
+    expect(hooks["permission.ask"]).toBeUndefined();
+  });
+
   it("should have a default export that is the same as the named plugin export", () => {
     expect(defaultExport).toBe(plugin);
   });

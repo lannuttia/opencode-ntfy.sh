@@ -51,3 +51,10 @@
 - [x] Remove stray `src/_typecheck_plugin.ts` artifact and its `dist/` output
 - [x] Add test to verify `_typecheck_*` files are not compiled into `dist/`
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 8: Add `permission.asked` Event Support
+
+- [ ] Add `permission.ask` hook to send a notification when the agent requests permission
+- [ ] Include event type, project name, timestamp, and permission title in the notification
+- [ ] Write tests for the `permission.ask` hook in `tests/plugin.test.ts`
+- [ ] Ensure all tests pass and package builds cleanly

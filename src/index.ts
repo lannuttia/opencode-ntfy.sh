@@ -35,6 +35,13 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         });
       }
     },
+    "permission.ask": async (input) => {
+      await sendNotification(config, {
+        title: `${project} - Permission Requested`,
+        message: `Event: permission.asked\nProject: ${project}\nTime: ${new Date().toISOString()}\nPermission: ${input.title}`,
+        tags: "lock",
+      });
+    },
   };
 };
 

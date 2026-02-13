@@ -23,6 +23,7 @@ If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md
 - It should send ntfy.sh notifications on the following events:
   - `session.idle` - when the agent finishes and is waiting for input
   - `session.error` - when a session encounters an error
+  - `permission.asked` - when the agent needs permission to perform an action
 - Notifications should include:
   - The event type
   - The project name (derived from the working directory)
