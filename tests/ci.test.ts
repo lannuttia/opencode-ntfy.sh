@@ -128,16 +128,25 @@ describe("CI workflow", () => {
     expect(publishJob.permissions.contents).toBe("read");
   });
 
-  it("should set NODE_AUTH_TOKEN to secrets.NPM_TOKEN in the publish step", () => {
+  it("should not use NODE_AUTH_TOKEN or secrets.NPM_TOKEN in the publish job (npm trusted publishing uses OIDC)", () => {
     const workflow = loadWorkflow();
     const publishJob = workflow.jobs.publish;
+    const raw = readFileSync(WORKFLOW_PATH, "utf-8");
 
-    const publishStep = publishJob.steps.find(
-      (s: any) => s.run && s.run.includes("npm publish")
-    );
-    expect(publishStep).toBeDefined();
-    expect(publishStep.env).toBeDefined();
-    expect(publishStep.env.NODE_AUTH_TOKEN).toBe("${{ secrets.NPM_TOKEN }}");
+    // No step in the publish job should reference NODE_AUTH_TOKEN or NPM_TOKEN
+    for (const step of publishJob.steps) {
+      if (step.env) {
+        expect(step.env).not.toHaveProperty("NODE_AUTH_TOKEN");
+      }
+    }
+
+    // Also verify the raw YAML content of the publish job doesn't reference secrets.NPM_TOKEN
+    // Split by jobs to isolate the publish section
+    const publishSection = raw.split(/^\s+publish:/m)[1];
+    if (publishSection) {
+      expect(publishSection).not.toContain("NPM_TOKEN");
+      expect(publishSection).not.toContain("NODE_AUTH_TOKEN");
+    }
   });
 
   it("should have a repository field in package.json matching the GitHub repository", () => {
