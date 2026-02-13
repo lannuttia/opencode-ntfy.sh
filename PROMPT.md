@@ -81,3 +81,9 @@ This project will use GitHub Actions and needs to perform the following:
 - Run the tests
 - Build the package
 - If the pipeline run was triggered by the pushing of a version tag, then the module needs to be published to https://registry.npmjs.org/
+
+Publishing must use npm trusted publishing (OIDC) instead of a long-lived npm access token. This means:
+- The publish job must have `permissions: id-token: write` and `contents: read`
+- The publish job must NOT use `NODE_AUTH_TOKEN` or `secrets.NPM_TOKEN`
+- `package.json` must include a `repository` field matching the GitHub repository (required for provenance)
+- Provenance attestations are generated automatically with trusted publishing

@@ -104,6 +104,7 @@ describe("plugin", () => {
   });
 
   it("should return empty hooks when NTFY_TOPIC is not set", async () => {
+    vi.stubEnv("NTFY_TOPIC", "");
     const hooks = await plugin(createMockInput());
     expect(hooks.event).toBeUndefined();
   });
@@ -157,6 +158,7 @@ describe("plugin", () => {
   });
 
   it("should not return permission.ask hook when NTFY_TOPIC is not set", async () => {
+    vi.stubEnv("NTFY_TOPIC", "");
     const hooks = await plugin(createMockInput());
     expect(hooks["permission.ask"]).toBeUndefined();
   });
