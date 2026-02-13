@@ -94,8 +94,8 @@ describe("resolveField", () => {
 
     const result = await resolveField(
       $,
-      'echo "${PROJECT} - ${EVENT}"',
-      { PROJECT: "my-project", EVENT: "session.idle", TIME: "2026-01-01T00:00:00Z" },
+      'echo "${project} - ${event}"',
+      { project: "my-project", event: "session.idle", time: "2026-01-01T00:00:00Z" },
       "fallback"
     );
 
@@ -112,13 +112,31 @@ describe("resolveField", () => {
 
     const result = await resolveField(
       $,
-      'echo "${PROJECT} ${ERROR}"',
-      { PROJECT: "my-project" },
+      'echo "${project} ${error}"',
+      { project: "my-project" },
       "fallback"
     );
 
     expect(executedCommand).toBe('echo "my-project "');
     expect(result).toBe("result");
+  });
+
+  it("should substitute hyphenated variable names like ${permission-type}", async () => {
+    let executedCommand = "";
+    const $ = createMockShell((cmd) => {
+      executedCommand = cmd;
+      return { stdout: "file.write: config.json", exitCode: 0 };
+    });
+
+    const result = await resolveField(
+      $,
+      'echo "${permission-type}: ${permission-patterns}"',
+      { "permission-type": "file.write", "permission-patterns": "config.json" },
+      "fallback"
+    );
+
+    expect(executedCommand).toBe('echo "file.write: config.json"');
+    expect(result).toBe("file.write: config.json");
   });
 
   it("should return fallback when command exits with non-zero exit code", async () => {

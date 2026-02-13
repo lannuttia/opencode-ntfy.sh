@@ -307,10 +307,10 @@ describe("plugin", () => {
     expect(capturedRequest!.headers.get("Priority")).toBe("max");
   });
 
-  it("should substitute template variables in custom commands", async () => {
+  it("should substitute template variables in custom commands using lowercase hyphenated names", async () => {
     vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
-    vi.stubEnv("OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD", 'echo "${PROJECT} is idle"');
+    vi.stubEnv("OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD", 'echo "${project} is idle"');
     server.use(captureHandler("https://ntfy.example.com/test-topic"));
 
     const mock$ = createMockShell((cmd) => {

@@ -97,3 +97,11 @@
 - [x] Use the correct per-event env var names (e.g., `OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD`)
 - [x] Update `tests/plugin.test.ts` with tests for custom commands
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 14: Fix Template Variable Names to Match Spec
+
+- [x] Change template variable names from uppercase/underscored (`${PROJECT}`, `${PERMISSION_TYPE}`) to lowercase/hyphenated (`${project}`, `${permission-type}`) per prompt spec
+- [x] Update regex in `src/exec.ts` from `\w+` to `[\w-]+` to support hyphenated variable names
+- [x] Update `buildVars` in `src/index.ts` to use lowercase hyphenated keys
+- [x] Update tests in `tests/exec.test.ts` and `tests/plugin.test.ts` to use new variable names
+- [x] Ensure all tests pass and package builds cleanly

@@ -7,14 +7,16 @@ or desktop when it needs your attention.
 
 ## Notifications
 
-The plugin sends notifications for two events:
+The plugin sends notifications for three events:
 
 - **Session Idle** -- The AI agent has finished its work and is waiting for
   input. Includes the project name and timestamp.
 - **Session Error** -- The session encountered an error. Includes the project
   name, timestamp, and error message (when available).
+- **Permission Asked** -- The agent needs permission to perform an action.
+  Includes the project name, timestamp, permission type, and patterns.
 
-If `NTFY_TOPIC` is not set, the plugin does nothing.
+If `OPENCODE_NTFY_TOPIC` is not set, the plugin does nothing.
 
 ## Install
 
@@ -35,10 +37,52 @@ Configuration is done through environment variables.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `NTFY_TOPIC` | Yes | -- | The ntfy.sh topic to publish to. |
-| `NTFY_SERVER` | No | `https://ntfy.sh` | The ntfy server URL. Set this to use a self-hosted instance. |
-| `NTFY_TOKEN` | No | -- | Bearer token for authenticated topics. |
-| `NTFY_PRIORITY` | No | `default` | Notification priority. One of: `min`, `low`, `default`, `high`, `max`. |
+| `OPENCODE_NTFY_TOPIC` | Yes | -- | The ntfy.sh topic to publish to. |
+| `OPENCODE_NTFY_SERVER` | No | `https://ntfy.sh` | The ntfy server URL. Set this to use a self-hosted instance. |
+| `OPENCODE_NTFY_TOKEN` | No | -- | Bearer token for authenticated topics. |
+| `OPENCODE_NTFY_PRIORITY` | No | `default` | Global notification priority. One of: `min`, `low`, `default`, `high`, `max`. |
+
+### Custom Notification Commands
+
+Each notification field (title, message, tags, priority) can be customized
+per event by setting an environment variable containing a shell command. The
+command's stdout (trimmed) is used as the field value. If the command is not
+set or fails, the hardcoded default is used silently.
+
+Before execution, template variables in the command string are substituted
+with their values. Unset variables are substituted with empty strings.
+
+#### Per-Event Environment Variables
+
+| Event | Title | Message | Tags | Priority |
+|---|---|---|---|---|
+| `session.idle` | `OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD` | `OPENCODE_NTFY_SESSION_IDLE_MESSAGE_CMD` | `OPENCODE_NTFY_SESSION_IDLE_TAGS_CMD` | `OPENCODE_NTFY_SESSION_IDLE_PRIORITY_CMD` |
+| `session.error` | `OPENCODE_NTFY_SESSION_ERROR_TITLE_CMD` | `OPENCODE_NTFY_SESSION_ERROR_MESSAGE_CMD` | `OPENCODE_NTFY_SESSION_ERROR_TAGS_CMD` | `OPENCODE_NTFY_SESSION_ERROR_PRIORITY_CMD` |
+| `permission.asked` | `OPENCODE_NTFY_PERMISSION_TITLE_CMD` | `OPENCODE_NTFY_PERMISSION_MESSAGE_CMD` | `OPENCODE_NTFY_PERMISSION_TAGS_CMD` | `OPENCODE_NTFY_PERMISSION_PRIORITY_CMD` |
+
+#### Template Variables
+
+| Variable | Available In | Description |
+|---|---|---|
+| `${project}` | All events | Project name derived from the working directory |
+| `${event}` | All events | The event type string (e.g., `session.idle`) |
+| `${time}` | All events | ISO 8601 timestamp |
+| `${error}` | `session.error` only | The error message (empty string for other events) |
+| `${permission-type}` | `permission.asked` only | The permission type (empty string for other events) |
+| `${permission-patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
+
+#### Example
+
+```sh
+# Custom title for idle notifications
+export OPENCODE_NTFY_SESSION_IDLE_TITLE_CMD='echo "${project} is done"'
+
+# Custom message with timestamp
+export OPENCODE_NTFY_SESSION_ERROR_MESSAGE_CMD='echo "Error in ${project} at ${time}: ${error}"'
+
+# Override priority for permission requests
+export OPENCODE_NTFY_PERMISSION_PRIORITY_CMD='echo "high"'
+```
 
 ### Subscribing to notifications
 
@@ -55,17 +99,17 @@ To receive notifications, subscribe to your topic using any
 ### Example
 
 ```sh
-export NTFY_TOPIC="my-opencode-notifications"
+export OPENCODE_NTFY_TOPIC="my-opencode-notifications"
 opencode
 ```
 
 With authentication and a self-hosted server:
 
 ```sh
-export NTFY_TOPIC="my-opencode-notifications"
-export NTFY_SERVER="https://ntfy.example.com"
-export NTFY_TOKEN="tk_mytoken"
-export NTFY_PRIORITY="high"
+export OPENCODE_NTFY_TOPIC="my-opencode-notifications"
+export OPENCODE_NTFY_SERVER="https://ntfy.example.com"
+export OPENCODE_NTFY_TOKEN="tk_mytoken"
+export OPENCODE_NTFY_PRIORITY="high"
 opencode
 ```
 

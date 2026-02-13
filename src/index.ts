@@ -44,15 +44,15 @@ function buildVars(
   project: string,
   event: string,
   time: string,
-  extra: Partial<Record<"ERROR" | "PERMISSION_TYPE" | "PERMISSION_PATTERNS", string>> = {}
+  extra: Partial<Record<"error" | "permission-type" | "permission-patterns", string>> = {}
 ): Record<string, string> {
   return {
-    PROJECT: project,
-    EVENT: event,
-    TIME: time,
-    ERROR: extra.ERROR ?? "",
-    PERMISSION_TYPE: extra.PERMISSION_TYPE ?? "",
-    PERMISSION_PATTERNS: extra.PERMISSION_PATTERNS ?? "",
+    project,
+    event,
+    time,
+    error: extra.error ?? "",
+    "permission-type": extra["permission-type"] ?? "",
+    "permission-patterns": extra["permission-patterns"] ?? "",
   };
 }
 
@@ -83,7 +83,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
             ? String(error.data.message)
             : "";
         const time = new Date().toISOString();
-        const vars = buildVars(project, "session.error", time, { ERROR: errorMsg });
+        const vars = buildVars(project, "session.error", time, { error: errorMsg });
 
         await resolveAndSend($, config, "SESSION_ERROR", vars, {
           title: `${project} - Session Error`,
@@ -99,8 +99,8 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         const patterns = props.patterns?.join(", ") || "";
         const time = new Date().toISOString();
         const vars = buildVars(project, "permission.asked", time, {
-          PERMISSION_TYPE: permissionType,
-          PERMISSION_PATTERNS: patterns,
+          "permission-type": permissionType,
+          "permission-patterns": patterns,
         });
         const detail = permissionType
           ? `\nPermission: ${permissionType}${patterns ? ` (${patterns})` : ""}`
@@ -120,8 +120,8 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         ? permission.pattern.join(", ")
         : permission.pattern || "";
       const vars = buildVars(project, "permission.asked", time, {
-        PERMISSION_TYPE: permissionType,
-        PERMISSION_PATTERNS: patterns,
+        "permission-type": permissionType,
+        "permission-patterns": patterns,
       });
 
       await resolveAndSend($, config, "PERMISSION", vars, {
