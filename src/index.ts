@@ -25,6 +25,10 @@ export function plugin(
   env: Record<string, string | undefined> = process.env,
   fetchFn?: FetchFn
 ): Plugin {
+  if (!env.NTFY_TOPIC) {
+    return { hooks: {} };
+  }
+
   const config = loadConfig(env);
 
   return {

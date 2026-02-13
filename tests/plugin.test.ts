@@ -52,4 +52,13 @@ describe("plugin", () => {
     expect(options.body).toContain("session.error");
     expect(options.body).toContain("Something went wrong");
   });
+
+  it("should return empty hooks when NTFY_TOPIC is not set", () => {
+    const mockFetch = vi.fn();
+
+    const p = plugin({}, mockFetch);
+
+    expect(p.hooks["session.idle"]).toBeUndefined();
+    expect(p.hooks["session.error"]).toBeUndefined();
+  });
 });
