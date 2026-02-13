@@ -79,8 +79,9 @@ opencode-ntfy.sh/
 ### CI
 This project will use GitHub Actions and needs to perform the following:
 - Run the tests
-- Build the package
-- If the pipeline run was triggered by the pushing of a version tag, then the module needs to be published to https://registry.npmjs.org/
+- If the pipeline run was triggered by the pushing of a version tag, then the following should happen:
+  - As part of the prepublish npm hook, the package should be built.
+  - The package should be published to https://registry.npmjs.org/
 
 Publishing must use npm trusted publishing (OIDC) instead of a long-lived npm access token. This means:
 - The publish job must have `permissions: id-token: write` and `contents: read`

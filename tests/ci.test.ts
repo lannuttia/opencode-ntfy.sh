@@ -168,4 +168,12 @@ describe("CI workflow", () => {
     expect(publishStep).toBeDefined();
     expect(publishStep.run).toContain("--provenance");
   });
+
+  it("should have a prepublishOnly script in package.json that builds the package", () => {
+    const pkgPath = join(ROOT, "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+
+    expect(pkg.scripts.prepublishOnly).toBeDefined();
+    expect(pkg.scripts.prepublishOnly).toContain("npm run build");
+  });
 });

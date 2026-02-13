@@ -75,3 +75,9 @@
 - [x] Add `repository` field to `package.json` (required for provenance attestations)
 - [x] Update CI tests to validate trusted publishing requirements (no `NPM_TOKEN`, OIDC permissions, `--provenance` flag, repository field)
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 11: Add prepublishOnly Hook
+
+- [x] Add `prepublishOnly` script to `package.json` that runs `npm run build` so the package is built automatically before publishing
+- [x] Write test to verify the `prepublishOnly` script exists and builds the package
+- [x] Ensure all tests pass and package builds cleanly
