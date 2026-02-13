@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { plugin } from "../src/index.js";
+import defaultExport, { plugin } from "../src/index.js";
 
 describe("plugin", () => {
   it("should be an async function that returns hooks with an event handler", async () => {
@@ -106,5 +106,9 @@ describe("plugin", () => {
     });
 
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("should have a default export that is the same as the named plugin export", () => {
+    expect(defaultExport).toBe(plugin);
   });
 });

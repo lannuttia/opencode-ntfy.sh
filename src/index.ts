@@ -61,3 +61,5 @@ export async function plugin(input: PluginInput): Promise<Hooks> {
     },
   };
 }
+
+export default plugin;
