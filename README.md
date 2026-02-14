@@ -3,6 +3,7 @@
 [![CI](https://github.com/lannuttia/opencode-ntfy.sh/actions/workflows/ci.yml/badge.svg)](https://github.com/lannuttia/opencode-ntfy.sh/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/lannuttia/opencode-ntfy.sh/graph/badge.svg)](https://codecov.io/gh/lannuttia/opencode-ntfy.sh)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/lannuttia/opencode-ntfy.sh/blob/main/LICENSE)
+[![Snyk Advisor](https://snyk.io/advisor/npm-package/opencode-ntfy.sh/badge.svg)](https://snyk.io/advisor/npm-package/opencode-ntfy.sh)
 
 An [OpenCode](https://opencode.ai) plugin that sends push notifications via
 [ntfy.sh](https://ntfy.sh) when your AI coding session finishes or encounters
