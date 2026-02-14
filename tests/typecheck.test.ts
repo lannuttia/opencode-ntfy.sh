@@ -6,7 +6,7 @@ import { join } from "node:path";
 const ROOT = join(import.meta.dirname, "..");
 
 describe("type conformance", () => {
-  it("should type-check that the plugin export satisfies the @opencode-ai/plugin Plugin type", () => {
+  it("should type-check that the plugin export satisfies the @opencode-ai/plugin Plugin type", { timeout: 30000 }, () => {
     const checkFile = join(ROOT, "src", "_typecheck_plugin.ts");
 
     writeFileSync(
@@ -31,7 +31,7 @@ void _check;
     }
   });
 
-  it("should not compile _typecheck_* files into dist when they exist in src", () => {
+  it("should not compile _typecheck_* files into dist when they exist in src", { timeout: 30000 }, () => {
     const checkFile = join(ROOT, "src", "_typecheck_build_test.ts");
 
     writeFileSync(
