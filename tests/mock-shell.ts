@@ -20,16 +20,13 @@ export function createMockShell(
 
   const shell: BunShell = Object.assign(
     (strings: TemplateStringsArray, ...expressions: unknown[]) => {
-      let command = strings[0];
-      for (let i = 0; i < expressions.length; i++) {
-        const expr = expressions[i];
-        if (isRawExpression(expr)) {
-          command += expr.raw;
-        } else {
-          command += String(expr);
-        }
-        command += strings[i + 1];
-      }
+      const command = expressions.reduce<string>(
+        (acc, expr, i) =>
+          acc +
+          (isRawExpression(expr) ? expr.raw : String(expr)) +
+          strings[i + 1],
+        strings[0]
+      );
 
       const result = actualHandler(command);
       const buf = Buffer.from(result.stdout);
