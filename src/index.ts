@@ -51,18 +51,10 @@ function buildVars(
   };
 }
 
-function eventType(event: { type: string }): string {
-  return event.type;
-}
-
 function hasPermissionProperties(
   event: { properties?: unknown }
 ): event is { properties: { permission?: string; patterns?: string[] } } {
-  const props = event.properties;
-  if (typeof props !== "object" || props === null) {
-    return false;
-  }
-  return true;
+  return typeof event.properties === "object" && event.properties !== null;
 }
 
 export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
@@ -83,9 +75,9 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
 
   return {
     event: async ({ event }) => {
-      const evtType = eventType(event);
+      const eventType: string = event.type;
 
-      if (cooldownGuard && !cooldownGuard.shouldAllow(evtType)) {
+      if (cooldownGuard && !cooldownGuard.shouldAllow(eventType)) {
         return;
       }
 
@@ -112,7 +104,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           message: "An error has occurred. Check the session for details.",
           tags: "warning",
         });
-      } else if (evtType === "permission.asked" && hasPermissionProperties(event)) {
+      } else if (eventType === "permission.asked" && hasPermissionProperties(event)) {
         const permissionType = event.properties.permission || "";
         const patternsArr = event.properties.patterns;
         const patterns = Array.isArray(patternsArr) ? patternsArr.join(", ") : "";
