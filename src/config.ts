@@ -61,11 +61,9 @@ export function loadConfig(
 
   const cooldownEdge = parseCooldownEdge(env.OPENCODE_NTFY_COOLDOWN_EDGE);
 
-  const fetchTimeoutRaw = env.OPENCODE_NTFY_FETCH_TIMEOUT;
-  let fetchTimeout: number | undefined;
-  if (fetchTimeoutRaw) {
-    fetchTimeout = parseISO8601Duration(fetchTimeoutRaw);
-  }
+  const fetchTimeout = env.OPENCODE_NTFY_FETCH_TIMEOUT
+    ? parseISO8601Duration(env.OPENCODE_NTFY_FETCH_TIMEOUT)
+    : undefined;
 
   return {
     topic,
