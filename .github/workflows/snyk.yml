@@ -1,9 +1,6 @@
 name: Snyk Security
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -40,7 +37,6 @@ jobs:
           sarif_file: snyk.sarif
 
       - name: Monitor project with Snyk
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
