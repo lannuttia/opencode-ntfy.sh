@@ -44,6 +44,8 @@ Configuration is done through environment variables.
 | `OPENCODE_NTFY_SERVER` | No | `https://ntfy.sh` | The ntfy server URL. Set this to use a self-hosted instance. |
 | `OPENCODE_NTFY_TOKEN` | No | -- | Bearer token for authenticated topics. |
 | `OPENCODE_NTFY_PRIORITY` | No | `default` | Global notification priority. One of: `min`, `low`, `default`, `high`, `max`. |
+| `OPENCODE_NTFY_COOLDOWN` | No | -- | ISO 8601 duration for notification cooldown (e.g., `PT30S`, `PT5M`). Suppresses duplicate notifications per event type within the cooldown period. |
+| `OPENCODE_NTFY_COOLDOWN_EDGE` | No | `leading` | Cooldown edge: `leading` sends immediately then suppresses, `trailing` waits for a quiet period before sending. |
 
 ### Custom Notification Commands
 
@@ -134,6 +136,14 @@ export OPENCODE_NTFY_TOPIC="my-opencode-notifications"
 export OPENCODE_NTFY_SERVER="https://ntfy.example.com"
 export OPENCODE_NTFY_TOKEN="tk_mytoken"
 export OPENCODE_NTFY_PRIORITY="high"
+opencode
+```
+
+With rate limiting (suppress duplicate notifications within 30 seconds):
+
+```sh
+export OPENCODE_NTFY_TOPIC="my-opencode-notifications"
+export OPENCODE_NTFY_COOLDOWN="PT30S"
 opencode
 ```
 

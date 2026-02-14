@@ -44,6 +44,8 @@ If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md
   - `OPENCODE_NTFY_ICON_MODE` (optional, defaults to `dark`) - whether the target device uses `light` or `dark` mode
   - `OPENCODE_NTFY_ICON_LIGHT` (optional) - custom icon URL override for light mode
   - `OPENCODE_NTFY_ICON_DARK` (optional) - custom icon URL override for dark mode
+  - `OPENCODE_NTFY_COOLDOWN` (optional) - ISO 8601 duration for notification cooldown (e.g., `PT30S`, `PT5M`). When set, duplicate notifications for the same event type are suppressed within the cooldown period. When not set, no rate limiting is applied.
+  - `OPENCODE_NTFY_COOLDOWN_EDGE` (optional, defaults to `leading`) - which edge of the cooldown window triggers the notification. `leading` sends the first notification immediately and suppresses duplicates for the cooldown period. `trailing` suppresses the first notification and allows one after the cooldown period of inactivity.
 
 ### Custom Notification Commands
 
@@ -133,6 +135,23 @@ The icon resolution logic is:
 3. If the mode is `dark` and `OPENCODE_NTFY_ICON_DARK` is set, use that URL.
 4. Otherwise, use the default `raw.githubusercontent.com` PNG URL for the corresponding mode.
 
+### Notification Cooldown
+
+The plugin supports configurable rate limiting to prevent notification spam when the agent rapidly cycles through states.
+
+- `OPENCODE_NTFY_COOLDOWN` accepts an ISO 8601 duration string (e.g., `PT30S` for 30 seconds, `PT5M` for 5 minutes). The duration is parsed by `src/cooldown.ts` via `parseISO8601Duration()`, which supports hours (`H`), minutes (`M`), seconds (`S`), and fractional seconds.
+- `OPENCODE_NTFY_COOLDOWN_EDGE` controls the throttling strategy:
+  - `leading` (default): The first notification fires immediately. Subsequent notifications for the same event type are suppressed until the cooldown period elapses.
+  - `trailing`: Notifications are suppressed until the cooldown period elapses since the last event of that type. Each new event resets the cooldown timer.
+- Cooldown is tracked per event type (e.g., `session.idle` and `session.error` have independent cooldown timers).
+- When `OPENCODE_NTFY_COOLDOWN` is not set, no rate limiting is applied.
+- A cooldown of `PT0S` (zero seconds) disables rate limiting.
+
+The cooldown guard is implemented in `src/cooldown.ts` and exposes:
+- `parseISO8601Duration(duration: string): number` - parses an ISO 8601 duration string and returns milliseconds
+- `createCooldownGuard(options: CooldownOptions): CooldownGuard` - creates a stateful guard that tracks per-event-type cooldowns
+- `CooldownGuard.shouldAllow(eventType: string): boolean` - returns whether a notification should be sent
+
 ### Publishing via ntfy.sh
 
 Send notifications via HTTP POST:
@@ -162,11 +181,13 @@ opencode-ntfy.sh/
     notify.ts         # ntfy.sh HTTP client
     config.ts         # Configuration from environment variables
     exec.ts           # Command execution and template variable substitution
+    cooldown.ts       # ISO 8601 duration parsing and cooldown guard
   tests/
     notify.test.ts    # Tests for the notification client
     config.test.ts    # Tests for configuration loading
     plugin.test.ts    # Tests for the plugin hooks
     exec.test.ts      # Tests for command execution
+    cooldown.test.ts  # Tests for cooldown guard and duration parsing
   eslint.config.js      # ESLint configuration
   package.json
   tsconfig.json
