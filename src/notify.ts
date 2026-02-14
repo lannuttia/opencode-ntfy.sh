@@ -18,21 +18,17 @@ export async function sendNotification(
     Priority: payload.priority ?? config.priority,
     Tags: payload.tags,
     "X-Icon": config.iconUrl,
+    ...(config.token ? { Authorization: `Bearer ${config.token}` } : {}),
   };
-
-  if (config.token) {
-    headers.Authorization = `Bearer ${config.token}`;
-  }
 
   const fetchOptions: RequestInit = {
     method: "POST",
     headers,
     body: payload.message,
+    ...(config.fetchTimeout !== undefined
+      ? { signal: AbortSignal.timeout(config.fetchTimeout) }
+      : {}),
   };
-
-  if (config.fetchTimeout !== undefined) {
-    fetchOptions.signal = AbortSignal.timeout(config.fetchTimeout);
-  }
 
   const response = await fetch(url, fetchOptions);
 
