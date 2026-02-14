@@ -100,8 +100,19 @@
 
 ## Phase 14: Fix Template Variable Names to Match Spec
 
-- [x] Change template variable names from uppercase/underscored (`${PROJECT}`, `${PERMISSION_TYPE}`) to lowercase/hyphenated (`${project}`, `${permission-type}`) per prompt spec
-- [x] Update regex in `src/exec.ts` from `\w+` to `[\w-]+` to support hyphenated variable names
-- [x] Update `buildVars` in `src/index.ts` to use lowercase hyphenated keys
+- [x] Change template variable names from uppercase/underscored (`${PROJECT}`, `${PERMISSION_TYPE}`) to lowercase/underscored (`${project}`, `${permission_type}`) per prompt spec
+- [x] Update `buildVars` in `src/index.ts` to use lowercase keys
 - [x] Update tests in `tests/exec.test.ts` and `tests/plugin.test.ts` to use new variable names
+- [x] Ensure all tests pass and package builds cleanly
+
+## Phase 15: Add Notification Icons
+
+- [x] Add `iconUrl` field to `NtfyConfig` interface in `src/config.ts`
+- [x] Implement icon URL resolution logic: mode (dark/light), custom URL overrides, default GitHub raw URLs using package version
+- [x] Read `OPENCODE_NTFY_ICON_MODE`, `OPENCODE_NTFY_ICON_LIGHT`, `OPENCODE_NTFY_ICON_DARK` environment variables
+- [x] Send `X-Icon` header in `sendNotification` using `config.iconUrl`
+- [x] Bundle OpenCode branded PNG icons in `assets/` directory (not published to npm)
+- [x] Write tests for icon URL resolution in `tests/config.test.ts` (8 tests: default dark, explicit dark, explicit light, invalid mode, dark override, light override, ignore wrong-mode overrides)
+- [x] Write test for `X-Icon` header in `tests/notify.test.ts`
+- [x] Write integration tests for icon header in `tests/plugin.test.ts` (default dark, light mode, custom dark URL)
 - [x] Ensure all tests pass and package builds cleanly
