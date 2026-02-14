@@ -196,8 +196,7 @@ describe("plugin", () => {
     expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
     expect(capturedRequest!.method).toBe("POST");
     expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
-    expect(capturedRequest!.body).toContain("permission.asked");
-    expect(capturedRequest!.body).toContain("Write to config.json");
+    expect(capturedRequest!.body).toBe("The agent needs permission to continue. Review and respond.");
   });
 
   it("should not return permission.ask hook when OPENCODE_NTFY_TOPIC is not set", async () => {
@@ -429,6 +428,79 @@ describe("plugin", () => {
 
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
+  });
+
+  it("should use default message for session.idle per spec", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.body).toBe(
+      "The agent has finished and is waiting for input."
+    );
+  });
+
+  it("should use default message for session.error per spec", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.error",
+        properties: {
+          sessionID: "abc-123",
+          error: {
+            name: "UnknownError",
+            data: { message: "Something went wrong" },
+          },
+        },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.body).toBe(
+      "An error has occurred. Check the session for details."
+    );
+  });
+
+  it("should use default message for permission.asked per spec", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "permission.asked",
+        properties: {
+          id: "perm-1",
+          permission: "file.write",
+          sessionID: "abc-123",
+          patterns: ["config.json"],
+          metadata: {},
+          always: ["config.json"],
+        },
+      } as any,
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.body).toBe(
+      "The agent needs permission to continue. Review and respond."
+    );
   });
 
   it("should use custom icon URL from OPENCODE_NTFY_ICON_DARK when mode is dark", async () => {

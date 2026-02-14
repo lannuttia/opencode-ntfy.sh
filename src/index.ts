@@ -71,7 +71,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
 
         await resolveAndSend($, config, "SESSION_IDLE", vars, {
           title: "Agent Idle",
-          message: `Event: session.idle\nProject: ${project}\nTime: ${time}`,
+          message: "The agent has finished and is waiting for input.",
           tags: "hourglass_done",
         });
       } else if (event.type === "session.error") {
@@ -85,7 +85,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
 
         await resolveAndSend($, config, "SESSION_ERROR", vars, {
           title: "Agent Error",
-          message: `Event: session.error\nProject: ${project}\nTime: ${time}${errorMsg ? `\nError: ${errorMsg}` : ""}`,
+          message: "An error has occurred. Check the session for details.",
           tags: "warning",
         });
       } else if ((event.type as string) === "permission.asked") {
@@ -106,7 +106,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
 
         await resolveAndSend($, config, "PERMISSION", vars, {
           title: "Permission Asked",
-          message: `Event: permission.asked\nProject: ${project}\nTime: ${time}${detail}`,
+          message: "The agent needs permission to continue. Review and respond.",
           tags: "lock",
         });
       }
@@ -124,7 +124,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
 
       await resolveAndSend($, config, "PERMISSION", vars, {
         title: "Permission Asked",
-        message: `Event: permission.asked\nProject: ${project}\nTime: ${time}\nPermission: ${permission.title}`,
+        message: "The agent needs permission to continue. Review and respond.",
         tags: "lock",
       });
     },
