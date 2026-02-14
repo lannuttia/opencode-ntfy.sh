@@ -31,7 +31,10 @@
     "type": "git",
     "url": "git+https://github.com/lannuttia/opencode-ntfy.sh.git"
   },
+  "author": "Anthony Lannutti <lannuttia@gmail.com>",
   "license": "MIT",
+  "homepage": "https://github.com/lannuttia/opencode-ntfy.sh#readme",
+  "bugs": "https://github.com/lannuttia/opencode-ntfy.sh/issues",
   "keywords": [
     "opencode",
     "opencode-plugin",
