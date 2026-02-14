@@ -131,6 +131,28 @@ Increment 2: <description>
 
 Mark only ONE todo as in_progress at a time. Complete it before starting the next.
 
+# NON-CODE CHANGES
+
+The strict TDD cycle applies to **code changes** -- source files, logic, and
+behavior that can be validated by tests. For non-code changes that have no
+testable behavior, skip the Red-Green-Refactor cycle and apply the changes
+directly. Non-code changes include but are not limited to:
+
+- Documentation updates (README, PROMPT.md, PLAN.md, CHANGELOG, etc.)
+- CI/CD pipeline configuration (.github/workflows/, etc.)
+- Linter, formatter, or editor configuration files
+- .gitignore, .npmrc, LICENSE, and similar project metadata
+- Dependency version bumps (package.json, lock files) where no source changes
+  are required
+- Asset files (images, icons, etc.)
+
+For non-code changes:
+1. Make the change
+2. If the change could affect build or test outcomes (e.g., dependency updates,
+   CI config), run the existing test suite to confirm nothing is broken
+3. Commit with an appropriate Conventional Commits prefix (docs:, chore:, ci:,
+   build:, etc.)
+
 # HARD RULES
 
 - NEVER write implementation before seeing a RED test
