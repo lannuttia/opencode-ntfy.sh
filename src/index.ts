@@ -2,7 +2,7 @@ import type { Plugin, PluginInput, Hooks } from "@opencode-ai/plugin";
 import { loadConfig, type NtfyConfig } from "./config.js";
 import { sendNotification } from "./notify.js";
 import { resolveField } from "./exec.js";
-import { createCooldownGuard, type CooldownGuard } from "./cooldown.js";
+import { createCooldownGuard } from "./cooldown.js";
 
 type BunShell = PluginInput["$"];
 
@@ -59,13 +59,9 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const config = loadConfig(process.env);
   const $ = input.$;
 
-  let cooldownGuard: CooldownGuard | undefined;
-  if (config.cooldown) {
-    cooldownGuard = createCooldownGuard({
-      cooldown: config.cooldown,
-      edge: config.cooldownEdge,
-    });
-  }
+  const cooldownGuard = config.cooldown
+    ? createCooldownGuard({ cooldown: config.cooldown, edge: config.cooldownEdge })
+    : undefined;
 
   return {
     event: async ({ event }) => {
