@@ -85,4 +85,62 @@ describe("cooldown guard", () => {
       expect(guard.shouldAllow("session.idle")).toBe(true);
     });
   });
+
+  describe("trailing edge", () => {
+    it("should reject the first call", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S", edge: "trailing" });
+      expect(guard.shouldAllow("session.idle")).toBe(false);
+    });
+
+    it("should allow after the cooldown period has elapsed since the first call", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S", edge: "trailing" });
+      guard.shouldAllow("session.idle");
+      vi.advanceTimersByTime(5001);
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+    });
+
+    it("should reject again immediately after an allowed trailing call", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S", edge: "trailing" });
+      guard.shouldAllow("session.idle");
+      vi.advanceTimersByTime(5001);
+      guard.shouldAllow("session.idle"); // allowed
+      expect(guard.shouldAllow("session.idle")).toBe(false);
+    });
+
+    it("should track different event types independently", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S", edge: "trailing" });
+      guard.shouldAllow("session.idle");
+      vi.advanceTimersByTime(5001);
+      // session.idle is now allowed (cooldown elapsed)
+      // session.error has never been called, so it starts fresh
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+      expect(guard.shouldAllow("session.error")).toBe(false);
+    });
+
+    it("should reset the cooldown timer on each rejected call", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S", edge: "trailing" });
+      guard.shouldAllow("session.idle"); // t=0, rejected, starts cooldown
+      vi.advanceTimersByTime(3000); // t=3s
+      guard.shouldAllow("session.idle"); // rejected, resets cooldown to t=3s
+      vi.advanceTimersByTime(3000); // t=6s, only 3s since last call at t=3s
+      expect(guard.shouldAllow("session.idle")).toBe(false); // rejected, resets to t=6s
+      vi.advanceTimersByTime(5001); // t=11s, 5s+ since last call at t=6s
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+    });
+
+    it("should allow all calls when cooldown is PT0S (disabled)", () => {
+      const guard = createCooldownGuard({ cooldown: "PT0S", edge: "trailing" });
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+    });
+  });
+
+  describe("edge option defaults to leading", () => {
+    it("should default to leading edge when edge is not specified", () => {
+      const guard = createCooldownGuard({ cooldown: "PT5S" });
+      // Leading edge allows the first call
+      expect(guard.shouldAllow("session.idle")).toBe(true);
+      expect(guard.shouldAllow("session.idle")).toBe(false);
+    });
+  });
 });

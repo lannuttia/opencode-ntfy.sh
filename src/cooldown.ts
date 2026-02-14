@@ -17,6 +17,7 @@ export function parseISO8601Duration(duration: string): number {
 
 export interface CooldownOptions {
   cooldown: string;
+  edge?: "leading" | "trailing";
 }
 
 export interface CooldownGuard {
@@ -25,7 +26,8 @@ export interface CooldownGuard {
 
 export function createCooldownGuard(options: CooldownOptions): CooldownGuard {
   const cooldownMs = parseISO8601Duration(options.cooldown);
-  const lastAllowed = new Map<string, number>();
+  const edge = options.edge ?? "leading";
+  const lastSeen = new Map<string, number>();
 
   return {
     shouldAllow(eventType: string): boolean {
@@ -34,13 +36,28 @@ export function createCooldownGuard(options: CooldownOptions): CooldownGuard {
       }
 
       const now = Date.now();
-      const last = lastAllowed.get(eventType);
+      const last = lastSeen.get(eventType);
 
-      if (last !== undefined && now - last <= cooldownMs) {
+      if (edge === "leading") {
+        if (last !== undefined && now - last <= cooldownMs) {
+          return false;
+        }
+        lastSeen.set(eventType, now);
+        return true;
+      }
+
+      // trailing edge
+      if (last === undefined) {
+        lastSeen.set(eventType, now);
         return false;
       }
 
-      lastAllowed.set(eventType, now);
+      if (now - last <= cooldownMs) {
+        lastSeen.set(eventType, now);
+        return false;
+      }
+
+      lastSeen.set(eventType, now);
       return true;
     },
   };
