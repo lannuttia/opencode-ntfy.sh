@@ -174,4 +174,26 @@ describe("loadConfig", () => {
       })
     ).toThrow("OPENCODE_NTFY_COOLDOWN_EDGE");
   });
+
+  it("should default fetchTimeout to undefined when OPENCODE_NTFY_FETCH_TIMEOUT is not set", () => {
+    const config = loadConfig({ OPENCODE_NTFY_TOPIC: "test" });
+    expect(config.fetchTimeout).toBeUndefined();
+  });
+
+  it("should set fetchTimeout in milliseconds from OPENCODE_NTFY_FETCH_TIMEOUT", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_FETCH_TIMEOUT: "PT10S",
+    });
+    expect(config.fetchTimeout).toBe(10000);
+  });
+
+  it("should throw for invalid OPENCODE_NTFY_FETCH_TIMEOUT value", () => {
+    expect(() =>
+      loadConfig({
+        OPENCODE_NTFY_TOPIC: "test",
+        OPENCODE_NTFY_FETCH_TIMEOUT: "invalid",
+      })
+    ).toThrow("Invalid ISO 8601 duration");
+  });
 });

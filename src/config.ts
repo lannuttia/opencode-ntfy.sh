@@ -11,6 +11,7 @@ export interface NtfyConfig {
   iconUrl: string;
   cooldown?: string;
   cooldownEdge?: "leading" | "trailing";
+  fetchTimeout?: number;
 }
 
 const VALID_PRIORITIES = ["min", "low", "default", "high", "max"];
@@ -60,6 +61,12 @@ export function loadConfig(
 
   const cooldownEdge = parseCooldownEdge(env.OPENCODE_NTFY_COOLDOWN_EDGE);
 
+  const fetchTimeoutRaw = env.OPENCODE_NTFY_FETCH_TIMEOUT;
+  let fetchTimeout: number | undefined;
+  if (fetchTimeoutRaw) {
+    fetchTimeout = parseISO8601Duration(fetchTimeoutRaw);
+  }
+
   return {
     topic,
     server: env.OPENCODE_NTFY_SERVER || "https://ntfy.sh",
@@ -68,6 +75,7 @@ export function loadConfig(
     iconUrl: resolveIconUrl(env),
     cooldown: cooldown || undefined,
     cooldownEdge,
+    fetchTimeout,
   };
 }
 
