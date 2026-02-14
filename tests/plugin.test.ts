@@ -481,4 +481,91 @@ describe("plugin", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.headers.get("Title")).toBe("Custom Permission");
   });
+
+  it("should suppress duplicate notifications within the cooldown period", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_COOLDOWN", "PT5S");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).not.toBeNull();
+
+    resetCapturedRequest();
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it("should allow notifications after cooldown period expires", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_COOLDOWN", "PT5S");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).not.toBeNull();
+
+    resetCapturedRequest();
+    vi.advanceTimersByTime(5001);
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).not.toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it("should not apply cooldown when OPENCODE_NTFY_COOLDOWN is not set", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).not.toBeNull();
+
+    resetCapturedRequest();
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+    expect(capturedRequest).not.toBeNull();
+  });
 });

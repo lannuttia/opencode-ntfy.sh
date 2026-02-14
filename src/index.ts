@@ -2,6 +2,7 @@ import type { Plugin, PluginInput, Hooks } from "@opencode-ai/plugin";
 import { loadConfig, type NtfyConfig } from "./config.js";
 import { sendNotification } from "./notify.js";
 import { resolveField } from "./exec.js";
+import { createCooldownGuard, type CooldownGuard } from "./cooldown.js";
 
 type BunShell = PluginInput["$"];
 
@@ -72,8 +73,22 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const config = loadConfig(process.env);
   const $ = input.$;
 
+  let cooldownGuard: CooldownGuard | undefined;
+  if (config.cooldown) {
+    cooldownGuard = createCooldownGuard({
+      cooldown: config.cooldown,
+      edge: config.cooldownEdge,
+    });
+  }
+
   return {
     event: async ({ event }) => {
+      const evtType = eventType(event);
+
+      if (cooldownGuard && !cooldownGuard.shouldAllow(evtType)) {
+        return;
+      }
+
       if (event.type === "session.idle") {
         const time = new Date().toISOString();
         const vars = buildVars("session.idle", time);
@@ -97,7 +112,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           message: "An error has occurred. Check the session for details.",
           tags: "warning",
         });
-      } else if (eventType(event) === "permission.asked" && hasPermissionProperties(event)) {
+      } else if (evtType === "permission.asked" && hasPermissionProperties(event)) {
         const permissionType = event.properties.permission || "";
         const patternsArr = event.properties.patterns;
         const patterns = Array.isArray(patternsArr) ? patternsArr.join(", ") : "";
