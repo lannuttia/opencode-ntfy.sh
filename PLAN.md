@@ -138,3 +138,27 @@
 - [x] Add `fireEvent` helper for testing events not yet in the SDK's `Event` union (e.g., `permission.asked`)
 - [x] Add typecheck test enforcing no-cast rule in `tests/` files
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 18: Add Fetch Timeout Support
+
+- [x] Add `fetchTimeout?: number` field to `NtfyConfig` in `src/config.ts`
+- [x] Parse `OPENCODE_NTFY_FETCH_TIMEOUT` via `parseISO8601Duration()` in `loadConfig`
+- [x] Use `AbortSignal.timeout(config.fetchTimeout)` in `sendNotification` when `fetchTimeout` is set
+- [x] Write tests for config parsing (default undefined, valid value, invalid throws)
+- [x] Write tests for fetch signal behavior (present when set, absent when not set)
+- [x] Ensure all tests pass and package builds cleanly
+
+## Phase 19: Node.js Version Support & CI Matrix
+
+- [x] Add `engines.node` field (`>=20`) to `package.json`
+- [x] Update CI workflow to use matrix strategy for Node.js 20, 22, and 24
+- [x] Separate publish step to run only once on the latest Node.js version
+- [x] Upload coverage only once (on Node.js 24)
+
+## Phase 20: README Updates
+
+- [x] Add icon configuration environment variables to the configuration table
+- [x] Add `OPENCODE_NTFY_FETCH_TIMEOUT` to the configuration table
+- [x] Add default tag documentation alongside title and message defaults
+- [x] Fix title/message default table ordering for consistency (idle, error, permission)
+- [x] Update Node.js version prerequisite from v18+ to v20+

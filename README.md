@@ -46,8 +46,12 @@ Configuration is done through environment variables.
 | `OPENCODE_NTFY_SERVER` | No | `https://ntfy.sh` | The ntfy server URL. Set this to use a self-hosted instance. |
 | `OPENCODE_NTFY_TOKEN` | No | -- | Bearer token for authenticated topics. |
 | `OPENCODE_NTFY_PRIORITY` | No | `default` | Global notification priority. One of: `min`, `low`, `default`, `high`, `max`. |
+| `OPENCODE_NTFY_ICON_MODE` | No | `dark` | Icon variant to use: `light` or `dark`. Reflects whether the target device uses light or dark mode. |
+| `OPENCODE_NTFY_ICON_LIGHT` | No | -- | Custom icon URL override for light mode. Must be JPEG or PNG. |
+| `OPENCODE_NTFY_ICON_DARK` | No | -- | Custom icon URL override for dark mode. Must be JPEG or PNG. |
 | `OPENCODE_NTFY_COOLDOWN` | No | -- | ISO 8601 duration for notification cooldown (e.g., `PT30S`, `PT5M`). Suppresses duplicate notifications per event type within the cooldown period. |
 | `OPENCODE_NTFY_COOLDOWN_EDGE` | No | `leading` | Cooldown edge: `leading` sends immediately then suppresses, `trailing` waits for a quiet period before sending. |
+| `OPENCODE_NTFY_FETCH_TIMEOUT` | No | -- | ISO 8601 duration for the HTTP request timeout (e.g., `PT10S`, `PT1M`). When set, the fetch call is aborted if the server does not respond in time. |
 
 ### Custom Notification Commands
 
@@ -87,17 +91,28 @@ newline.
 
 | Event | Default Command |
 |---|---|
-| `session.error` | `printf "%s" "Agent Error"` |
 | `session.idle` | `printf "%s" "Agent Idle"` |
+| `session.error` | `printf "%s" "Agent Error"` |
 | `permission.asked` | `printf "%s" "Permission Asked"` |
 
 **Message content defaults:**
 
 | Event | Default Command |
 |---|---|
-| `session.error` | `printf "%s" "An error has occurred. Check the session for details."` |
 | `session.idle` | `printf "%s" "The agent has finished and is waiting for input."` |
+| `session.error` | `printf "%s" "An error has occurred. Check the session for details."` |
 | `permission.asked` | `printf "%s" "The agent needs permission to continue. Review and respond."` |
+
+**Tag defaults:**
+
+Each event type has a default tag corresponding to an
+[emoji shortcode](https://docs.ntfy.sh/emojis/) supported by ntfy.sh:
+
+| Event | Default Tag | Emoji |
+|---|---|---|
+| `session.idle` | `hourglass_done` | ⌛ |
+| `session.error` | `warning` | ⚠️ |
+| `permission.asked` | `lock` | 🔒 |
 
 #### Example
 
@@ -153,7 +168,7 @@ opencode
 
 ### Prerequisites
 
-- Node.js (v18+ for native `fetch` support)
+- Node.js (v20+)
 - npm
 
 ### Setup

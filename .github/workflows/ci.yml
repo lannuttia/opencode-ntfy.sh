@@ -15,8 +15,35 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build --if-present
+      - run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == '24'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: coverage/
+          fail_ci_if_error: true
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v4
 
@@ -25,16 +52,6 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-      - run: npm run lint
-      - run: npm run build --if-present
-      - run: npm run test:coverage
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: coverage/
-          fail_ci_if_error: true
+      - run: npm run build
 
       - run: npm publish
-        if: startsWith(github.ref, 'refs/tags/v')

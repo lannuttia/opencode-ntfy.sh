@@ -51,5 +51,8 @@
     "ai",
     "coding-assistant",
     "plugin"
-  ]
+  ],
+  "engines": {
+    "node": ">=20"
+  }
 }
