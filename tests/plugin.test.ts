@@ -333,6 +333,70 @@ describe("plugin", () => {
     expect(capturedRequest!.headers.get("Title")).toBe("session.idle is done");
   });
 
+  it("should include X-Icon header with default dark icon URL in session.idle notification", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    const iconHeader = capturedRequest!.headers.get("X-Icon");
+    expect(iconHeader).not.toBeNull();
+    expect(iconHeader).toContain("opencode-icon-dark.png");
+    expect(iconHeader).toContain("raw.githubusercontent.com");
+  });
+
+  it("should include X-Icon header with light icon URL when OPENCODE_NTFY_ICON_MODE is light", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_ICON_MODE", "light");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    const iconHeader = capturedRequest!.headers.get("X-Icon");
+    expect(iconHeader).not.toBeNull();
+    expect(iconHeader).toContain("opencode-icon-light.png");
+    expect(iconHeader).toContain("raw.githubusercontent.com");
+  });
+
+  it("should use custom icon URL from OPENCODE_NTFY_ICON_DARK when mode is dark", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    vi.stubEnv("OPENCODE_NTFY_ICON_DARK", "https://example.com/custom-dark.png");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("X-Icon")).toBe(
+      "https://example.com/custom-dark.png"
+    );
+  });
+
   it("should use custom commands for permission.ask hook", async () => {
     vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
