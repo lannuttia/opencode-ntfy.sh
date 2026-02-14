@@ -5,7 +5,7 @@ import type { NtfyConfig } from "../src/config.js";
 import {
   server,
   captureHandler,
-  capturedRequest,
+  getCapturedRequest,
   resetCapturedRequest,
 } from "./msw-helpers.js";
 
@@ -34,13 +34,14 @@ describe("sendNotification", () => {
       tags: "robot",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.url).toBe("https://ntfy.sh/my-topic");
-    expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toBe("Test Title");
-    expect(capturedRequest!.headers.get("Priority")).toBe("default");
-    expect(capturedRequest!.headers.get("Tags")).toBe("robot");
-    expect(capturedRequest!.body).toBe("Test body");
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.url).toBe("https://ntfy.sh/my-topic");
+    expect(captured!.method).toBe("POST");
+    expect(captured!.headers.get("Title")).toBe("Test Title");
+    expect(captured!.headers.get("Priority")).toBe("default");
+    expect(captured!.headers.get("Tags")).toBe("robot");
+    expect(captured!.body).toBe("Test body");
   });
 
   it("should not include Authorization header when token is not set", async () => {
@@ -59,8 +60,9 @@ describe("sendNotification", () => {
       tags: "robot",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Authorization")).toBeNull();
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("Authorization")).toBeNull();
   });
 
   it("should include Authorization header when token is set", async () => {
@@ -80,8 +82,9 @@ describe("sendNotification", () => {
       tags: "tag",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Authorization")).toBe(
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("Authorization")).toBe(
       "Bearer my-secret-token"
     );
   });
@@ -103,8 +106,9 @@ describe("sendNotification", () => {
       priority: "high",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Priority")).toBe("high");
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("Priority")).toBe("high");
   });
 
   it("should use config.priority when payload.priority is not set", async () => {
@@ -123,8 +127,9 @@ describe("sendNotification", () => {
       tags: "tag",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Priority")).toBe("low");
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("Priority")).toBe("low");
   });
 
   it("should include X-Icon header from config.iconUrl", async () => {
@@ -143,8 +148,9 @@ describe("sendNotification", () => {
       tags: "tag",
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("X-Icon")).toBe(
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("X-Icon")).toBe(
       "https://example.com/icon.png"
     );
   });

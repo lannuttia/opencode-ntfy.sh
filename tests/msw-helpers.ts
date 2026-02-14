@@ -8,15 +8,19 @@ export interface CapturedRequest {
   body: string;
 }
 
-export let capturedRequest: CapturedRequest | null = null;
+const state: { request: CapturedRequest | null } = { request: null };
+
+export function getCapturedRequest(): CapturedRequest | null {
+  return state.request;
+}
 
 export function resetCapturedRequest(): void {
-  capturedRequest = null;
+  state.request = null;
 }
 
 export function captureHandler(url: string) {
   return http.post(url, async ({ request }) => {
-    capturedRequest = {
+    state.request = {
       url: request.url,
       method: request.method,
       headers: request.headers,

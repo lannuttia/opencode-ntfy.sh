@@ -4,7 +4,7 @@ import defaultExport, { plugin } from "../src/index.js";
 import {
   server,
   captureHandler,
-  capturedRequest,
+  getCapturedRequest,
   resetCapturedRequest,
 } from "./msw-helpers.js";
 import { createMockShell } from "./mock-shell.js";
@@ -80,10 +80,10 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
-    expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toBe("Agent Idle");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.url).toBe("https://ntfy.example.com/test-topic");
+    expect(getCapturedRequest()!.method).toBe("POST");
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Agent Idle");
   });
 
   it("should send a notification with error message when a session.error event is received", async () => {
@@ -106,10 +106,10 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
-    expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toBe("Agent Error");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.url).toBe("https://ntfy.example.com/test-topic");
+    expect(getCapturedRequest()!.method).toBe("POST");
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Agent Error");
   });
 
   it("should return empty hooks when OPENCODE_NTFY_TOPIC is not set", async () => {
@@ -129,7 +129,7 @@ describe("plugin", () => {
       properties: { info: {} },
     });
 
-    expect(capturedRequest).toBeNull();
+    expect(getCapturedRequest()).toBeNull();
   });
 
   it("should send a notification when a permission.asked event is received via the event hook", async () => {
@@ -151,10 +151,10 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
-    expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.url).toBe("https://ntfy.example.com/test-topic");
+    expect(getCapturedRequest()!.method).toBe("POST");
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Permission Asked");
   });
 
   it("should have a default export that is the same as the named plugin export", () => {
@@ -183,8 +183,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("Custom Idle Title");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Custom Idle Title");
   });
 
   it("should use custom priority command for session.error", async () => {
@@ -215,8 +215,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Priority")).toBe("max");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Priority")).toBe("max");
   });
 
   it("should substitute template variables in custom commands using underscored names", async () => {
@@ -241,8 +241,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("session.idle is done");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("session.idle is done");
   });
 
   it("should include X-Icon header with default dark icon URL in session.idle notification", async () => {
@@ -259,8 +259,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    const iconHeader = capturedRequest!.headers.get("X-Icon");
+    expect(getCapturedRequest()).not.toBeNull();
+    const iconHeader = getCapturedRequest()!.headers.get("X-Icon");
     expect(iconHeader).not.toBeNull();
     expect(iconHeader).toContain("opencode-icon-dark.png");
     expect(iconHeader).toContain("raw.githubusercontent.com");
@@ -281,8 +281,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    const iconHeader = capturedRequest!.headers.get("X-Icon");
+    expect(getCapturedRequest()).not.toBeNull();
+    const iconHeader = getCapturedRequest()!.headers.get("X-Icon");
     expect(iconHeader).not.toBeNull();
     expect(iconHeader).toContain("opencode-icon-light.png");
     expect(iconHeader).toContain("raw.githubusercontent.com");
@@ -302,8 +302,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("Agent Idle");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Agent Idle");
   });
 
   it("should use default title 'Agent Error' for session.error events", async () => {
@@ -326,8 +326,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("Agent Error");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Agent Error");
   });
 
   it("should use default title 'Permission Asked' for permission.asked events", async () => {
@@ -349,8 +349,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Permission Asked");
   });
 
   it("should use default message for session.idle per spec", async () => {
@@ -367,8 +367,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.body).toBe(
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.body).toBe(
       "The agent has finished and is waiting for input."
     );
   });
@@ -393,8 +393,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.body).toBe(
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.body).toBe(
       "An error has occurred. Check the session for details."
     );
   });
@@ -418,8 +418,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.body).toBe(
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.body).toBe(
       "The agent needs permission to continue. Review and respond."
     );
   });
@@ -439,8 +439,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("X-Icon")).toBe(
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("X-Icon")).toBe(
       "https://example.com/custom-dark.png"
     );
   });
@@ -478,8 +478,8 @@ describe("plugin", () => {
       },
     });
 
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.headers.get("Title")).toBe("Custom Permission");
+    expect(getCapturedRequest()).not.toBeNull();
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Custom Permission");
   });
 
   it("should suppress duplicate notifications within the cooldown period", async () => {
@@ -497,7 +497,7 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).not.toBeNull();
+    expect(getCapturedRequest()).not.toBeNull();
 
     resetCapturedRequest();
 
@@ -507,7 +507,7 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).toBeNull();
+    expect(getCapturedRequest()).toBeNull();
 
     vi.useRealTimers();
   });
@@ -527,7 +527,7 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).not.toBeNull();
+    expect(getCapturedRequest()).not.toBeNull();
 
     resetCapturedRequest();
     vi.advanceTimersByTime(5001);
@@ -538,7 +538,7 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).not.toBeNull();
+    expect(getCapturedRequest()).not.toBeNull();
 
     vi.useRealTimers();
   });
@@ -556,7 +556,7 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).not.toBeNull();
+    expect(getCapturedRequest()).not.toBeNull();
 
     resetCapturedRequest();
 
@@ -566,6 +566,6 @@ describe("plugin", () => {
         properties: { sessionID: "abc-123" },
       },
     });
-    expect(capturedRequest).not.toBeNull();
+    expect(getCapturedRequest()).not.toBeNull();
   });
 });
