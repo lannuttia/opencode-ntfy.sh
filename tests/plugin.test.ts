@@ -170,41 +170,6 @@ describe("plugin", () => {
     expect(capturedRequest).toBeNull();
   });
 
-  it("should send a notification when a permission.ask hook is called", async () => {
-    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
-    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
-    server.use(captureHandler("https://ntfy.example.com/test-topic"));
-
-    const hooks = await plugin(createMockInput());
-
-    expect(hooks["permission.ask"]).toBeDefined();
-    expect(typeof hooks["permission.ask"]).toBe("function");
-
-    const permissionInput = {
-      id: "perm-1",
-      type: "file.write",
-      sessionID: "abc-123",
-      messageID: "msg-1",
-      title: "Write to config.json",
-      metadata: {},
-      time: { created: Date.now() },
-    };
-
-    await hooks["permission.ask"]!(permissionInput, { status: "ask" });
-
-    expect(capturedRequest).not.toBeNull();
-    expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
-    expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
-    expect(capturedRequest!.body).toBe("The agent needs permission to continue. Review and respond.");
-  });
-
-  it("should not return permission.ask hook when OPENCODE_NTFY_TOPIC is not set", async () => {
-    vi.stubEnv("OPENCODE_NTFY_TOPIC", "");
-    const hooks = await plugin(createMockInput());
-    expect(hooks["permission.ask"]).toBeUndefined();
-  });
-
   it("should send a notification when a permission.asked event is received via the event hook", async () => {
     vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
@@ -524,7 +489,13 @@ describe("plugin", () => {
     );
   });
 
-  it("should use custom commands for permission.ask hook", async () => {
+  it("should not include a permission.ask hook (spec only uses event hook)", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    const hooks = await plugin(createMockInput());
+    expect(hooks["permission.ask"]).toBeUndefined();
+  });
+
+  it("should use custom commands for permission.asked event via event hook", async () => {
     vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
     vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
     vi.stubEnv("OPENCODE_NTFY_PERMISSION_TITLE_CMD", 'echo "Custom Permission"');
@@ -539,17 +510,19 @@ describe("plugin", () => {
 
     const hooks = await plugin(createMockInput({ $: mock$ }));
 
-    const permissionInput = {
-      id: "perm-1",
-      type: "file.write",
-      sessionID: "abc-123",
-      messageID: "msg-1",
-      title: "Write to config.json",
-      metadata: {},
-      time: { created: Date.now() },
-    };
-
-    await hooks["permission.ask"]!(permissionInput, { status: "ask" });
+    await hooks.event!({
+      event: {
+        type: "permission.asked",
+        properties: {
+          id: "perm-1",
+          permission: "file.write",
+          sessionID: "abc-123",
+          patterns: ["config.json"],
+          metadata: {},
+          always: ["config.json"],
+        },
+      } as any,
+    });
 
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.headers.get("Title")).toBe("Custom Permission");

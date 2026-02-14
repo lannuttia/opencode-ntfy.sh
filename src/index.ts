@@ -103,23 +103,6 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         });
       }
     },
-    "permission.ask": async (permission) => {
-      const time = new Date().toISOString();
-      const permissionType = permission.type || "";
-      const patterns = Array.isArray(permission.pattern)
-        ? permission.pattern.join(", ")
-        : permission.pattern || "";
-      const vars = buildVars("permission.asked", time, {
-        permission_type: permissionType,
-        permission_patterns: patterns,
-      });
-
-      await resolveAndSend($, config, "PERMISSION", vars, {
-        title: "Permission Asked",
-        message: "The agent needs permission to continue. Review and respond.",
-        tags: "lock",
-      });
-    },
   };
 };
 
