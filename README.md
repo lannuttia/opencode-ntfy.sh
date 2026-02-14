@@ -1,5 +1,8 @@
 # opencode-ntfy.sh
 
+[![CI](https://github.com/lannuttia/opencode-ntfy.sh/actions/workflows/ci.yml/badge.svg)](https://github.com/lannuttia/opencode-ntfy.sh/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/lannuttia/opencode-ntfy.sh/blob/main/LICENSE)
+
 An [OpenCode](https://opencode.ai) plugin that sends push notifications via
 [ntfy.sh](https://ntfy.sh) when your AI coding session finishes or encounters
 an error. Start a long-running task, walk away, and get notified on your phone
