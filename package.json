@@ -24,7 +24,7 @@
     "@opencode-ai/plugin": "^1.2.1",
     "@types/node": "^25.2.3",
     "@vitest/coverage-v8": "^4.0.18",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.0",
     "msw": "^2.12.10",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.55.0",
