@@ -77,19 +77,11 @@ export function loadConfig(
   };
 }
 
-const VALID_COOLDOWN_EDGES: ReadonlyArray<"leading" | "trailing"> = ["leading", "trailing"];
-
 function parseCooldownEdge(
   value: string | undefined
 ): "leading" | "trailing" | undefined {
-  if (!value) {
-    return undefined;
-  }
-  for (const edge of VALID_COOLDOWN_EDGES) {
-    if (value === edge) {
-      return edge;
-    }
-  }
+  if (!value) return undefined;
+  if (value === "leading" || value === "trailing") return value;
   throw new Error(
     "OPENCODE_NTFY_COOLDOWN_EDGE must be one of: leading, trailing"
   );
