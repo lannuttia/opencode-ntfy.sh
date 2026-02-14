@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseISO8601Duration } from "./cooldown.js";
 
 export interface NtfyConfig {
   topic: string;
@@ -8,6 +9,8 @@ export interface NtfyConfig {
   token?: string;
   priority: string;
   iconUrl: string;
+  cooldown?: string;
+  cooldownEdge?: "leading" | "trailing";
 }
 
 const VALID_PRIORITIES = ["min", "low", "default", "high", "max"];
@@ -49,11 +52,39 @@ export function loadConfig(
     );
   }
 
+  const cooldown = env.OPENCODE_NTFY_COOLDOWN;
+  if (cooldown) {
+    // Validate the duration string by parsing it; throws on invalid format
+    parseISO8601Duration(cooldown);
+  }
+
+  const cooldownEdge = parseCooldownEdge(env.OPENCODE_NTFY_COOLDOWN_EDGE);
+
   return {
     topic,
     server: env.OPENCODE_NTFY_SERVER || "https://ntfy.sh",
     token: env.OPENCODE_NTFY_TOKEN,
     priority,
     iconUrl: resolveIconUrl(env),
+    cooldown: cooldown || undefined,
+    cooldownEdge,
   };
+}
+
+const VALID_COOLDOWN_EDGES: ReadonlyArray<"leading" | "trailing"> = ["leading", "trailing"];
+
+function parseCooldownEdge(
+  value: string | undefined
+): "leading" | "trailing" | undefined {
+  if (!value) {
+    return undefined;
+  }
+  for (const edge of VALID_COOLDOWN_EDGES) {
+    if (value === edge) {
+      return edge;
+    }
+  }
+  throw new Error(
+    "OPENCODE_NTFY_COOLDOWN_EDGE must be one of: leading, trailing"
+  );
 }

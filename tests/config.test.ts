@@ -128,4 +128,50 @@ describe("loadConfig", () => {
       `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-light.png`
     );
   });
+
+  it("should default cooldown to undefined when OPENCODE_NTFY_COOLDOWN is not set", () => {
+    const config = loadConfig({ OPENCODE_NTFY_TOPIC: "test" });
+    expect(config.cooldown).toBeUndefined();
+  });
+
+  it("should set cooldown from OPENCODE_NTFY_COOLDOWN", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_COOLDOWN: "PT30S",
+    });
+    expect(config.cooldown).toBe("PT30S");
+  });
+
+  it("should throw for invalid OPENCODE_NTFY_COOLDOWN value", () => {
+    expect(() =>
+      loadConfig({
+        OPENCODE_NTFY_TOPIC: "test",
+        OPENCODE_NTFY_COOLDOWN: "invalid",
+      })
+    ).toThrow("Invalid ISO 8601 duration");
+  });
+
+  it("should default cooldownEdge to undefined when OPENCODE_NTFY_COOLDOWN_EDGE is not set", () => {
+    const config = loadConfig({ OPENCODE_NTFY_TOPIC: "test" });
+    expect(config.cooldownEdge).toBeUndefined();
+  });
+
+  it("should set cooldownEdge from OPENCODE_NTFY_COOLDOWN_EDGE", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_COOLDOWN: "PT30S",
+      OPENCODE_NTFY_COOLDOWN_EDGE: "trailing",
+    });
+    expect(config.cooldownEdge).toBe("trailing");
+  });
+
+  it("should throw for invalid OPENCODE_NTFY_COOLDOWN_EDGE value", () => {
+    expect(() =>
+      loadConfig({
+        OPENCODE_NTFY_TOPIC: "test",
+        OPENCODE_NTFY_COOLDOWN: "PT30S",
+        OPENCODE_NTFY_COOLDOWN_EDGE: "middle",
+      })
+    ).toThrow("OPENCODE_NTFY_COOLDOWN_EDGE");
+  });
 });
