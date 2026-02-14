@@ -70,7 +70,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         const vars = buildVars("session.idle", time);
 
         await resolveAndSend($, config, "SESSION_IDLE", vars, {
-          title: `${project} - Session Idle`,
+          title: "Agent Idle",
           message: `Event: session.idle\nProject: ${project}\nTime: ${time}`,
           tags: "hourglass_done",
         });
@@ -84,7 +84,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
         const vars = buildVars("session.error", time, { error: errorMsg });
 
         await resolveAndSend($, config, "SESSION_ERROR", vars, {
-          title: `${project} - Session Error`,
+          title: "Agent Error",
           message: `Event: session.error\nProject: ${project}\nTime: ${time}${errorMsg ? `\nError: ${errorMsg}` : ""}`,
           tags: "warning",
         });
@@ -105,7 +105,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           : "";
 
         await resolveAndSend($, config, "PERMISSION", vars, {
-          title: `${project} - Permission Requested`,
+          title: "Permission Asked",
           message: `Event: permission.asked\nProject: ${project}\nTime: ${time}${detail}`,
           tags: "lock",
         });
@@ -123,7 +123,7 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
       });
 
       await resolveAndSend($, config, "PERMISSION", vars, {
-        title: `${project} - Permission Requested`,
+        title: "Permission Asked",
         message: `Event: permission.asked\nProject: ${project}\nTime: ${time}\nPermission: ${permission.title}`,
         tags: "lock",
       });

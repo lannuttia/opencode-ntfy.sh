@@ -119,10 +119,7 @@ describe("plugin", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
     expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
-    expect(capturedRequest!.headers.get("Title")).toContain("Idle");
-    expect(capturedRequest!.body).toContain("session.idle");
-    expect(capturedRequest!.body).toContain("my-project");
+    expect(capturedRequest!.headers.get("Title")).toBe("Agent Idle");
   });
 
   it("should send a notification with error message when a session.error event is received", async () => {
@@ -148,10 +145,7 @@ describe("plugin", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
     expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
-    expect(capturedRequest!.headers.get("Title")).toContain("Error");
-    expect(capturedRequest!.body).toContain("session.error");
-    expect(capturedRequest!.body).toContain("Something went wrong");
+    expect(capturedRequest!.headers.get("Title")).toBe("Agent Error");
   });
 
   it("should return empty hooks when OPENCODE_NTFY_TOPIC is not set", async () => {
@@ -201,10 +195,8 @@ describe("plugin", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
     expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
-    expect(capturedRequest!.headers.get("Title")).toContain("Permission");
+    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
     expect(capturedRequest!.body).toContain("permission.asked");
-    expect(capturedRequest!.body).toContain("my-project");
     expect(capturedRequest!.body).toContain("Write to config.json");
   });
 
@@ -238,11 +230,7 @@ describe("plugin", () => {
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.url).toBe("https://ntfy.example.com/test-topic");
     expect(capturedRequest!.method).toBe("POST");
-    expect(capturedRequest!.headers.get("Title")).toContain("my-project");
-    expect(capturedRequest!.headers.get("Title")).toContain("Permission");
-    expect(capturedRequest!.body).toContain("permission.asked");
-    expect(capturedRequest!.body).toContain("my-project");
-    expect(capturedRequest!.body).toContain("file.write");
+    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
   });
 
   it("should have a default export that is the same as the named plugin export", () => {
@@ -374,6 +362,73 @@ describe("plugin", () => {
     expect(iconHeader).not.toBeNull();
     expect(iconHeader).toContain("opencode-icon-light.png");
     expect(iconHeader).toContain("raw.githubusercontent.com");
+  });
+
+  it("should use default title 'Agent Idle' for session.idle events", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.idle",
+        properties: { sessionID: "abc-123" },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("Title")).toBe("Agent Idle");
+  });
+
+  it("should use default title 'Agent Error' for session.error events", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "session.error",
+        properties: {
+          sessionID: "abc-123",
+          error: {
+            name: "UnknownError",
+            data: { message: "Something went wrong" },
+          },
+        },
+      },
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("Title")).toBe("Agent Error");
+  });
+
+  it("should use default title 'Permission Asked' for permission.asked events", async () => {
+    vi.stubEnv("OPENCODE_NTFY_TOPIC", "test-topic");
+    vi.stubEnv("OPENCODE_NTFY_SERVER", "https://ntfy.example.com");
+    server.use(captureHandler("https://ntfy.example.com/test-topic"));
+
+    const hooks = await plugin(createMockInput());
+
+    await hooks.event!({
+      event: {
+        type: "permission.asked",
+        properties: {
+          id: "perm-1",
+          permission: "file.write",
+          sessionID: "abc-123",
+          patterns: ["config.json"],
+          metadata: {},
+          always: ["config.json"],
+        },
+      } as any,
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("Title")).toBe("Permission Asked");
   });
 
   it("should use custom icon URL from OPENCODE_NTFY_ICON_DARK when mode is dark", async () => {

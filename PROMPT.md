@@ -64,6 +64,26 @@ Commands are executed via the Bun `$` shell provided by the OpenCode plugin inpu
 | `${permission_type}` | `permission.asked` only | The permission type (empty string for other events) |
 | `${permission_patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
 
+#### Default Commands
+
+When a custom command environment variable is not set, the following POSIX-compliant commands are used as defaults to populate the notification title and message content. These commands intentionally omit a trailing newline.
+
+##### Title Defaults
+
+| Event | Default Command |
+|---|---|
+| `session.error` | `printf "%s" "Agent Error"` |
+| `session.idle` | `printf "%s" "Agent Idle"` |
+| `permission.asked` | `printf "%s" "Permission Asked"` |
+
+##### Message Content Defaults
+
+| Event | Default Command |
+|---|---|
+| `session.error` | `printf "%s" "An error has occurred. Check the session for details."` |
+| `session.idle` | `printf "%s" "The agent has finished and is waiting for input."` |
+| `permission.asked` | `printf "%s" "The agent needs permission to continue. Review and respond."` |
+
 #### Execution Details
 
 - A new module `src/exec.ts` provides a `resolveField` function that:

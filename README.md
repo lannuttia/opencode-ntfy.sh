@@ -70,6 +70,28 @@ with their values. Unset variables are substituted with empty strings.
 | `${permission_type}` | `permission.asked` only | The permission type (empty string for other events) |
 | `${permission_patterns}` | `permission.asked` only | Comma-separated list of patterns (empty string for other events) |
 
+#### Default Values
+
+When a custom command environment variable is not set, the following
+POSIX-compliant defaults are used. These commands do not include a trailing
+newline.
+
+**Title defaults:**
+
+| Event | Default Command |
+|---|---|
+| `session.error` | `printf "%s" "Agent Error"` |
+| `session.idle` | `printf "%s" "Agent Idle"` |
+| `permission.asked` | `printf "%s" "Permission Asked"` |
+
+**Message content defaults:**
+
+| Event | Default Command |
+|---|---|
+| `session.error` | `printf "%s" "An error has occurred. Check the session for details."` |
+| `session.idle` | `printf "%s" "The agent has finished and is waiting for input."` |
+| `permission.asked` | `printf "%s" "The agent needs permission to continue. Review and respond."` |
+
 #### Example
 
 ```sh
