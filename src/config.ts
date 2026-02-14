@@ -1,11 +1,38 @@
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 export interface NtfyConfig {
   topic: string;
   server: string;
   token?: string;
   priority: string;
+  iconUrl: string;
 }
 
 const VALID_PRIORITIES = ["min", "low", "default", "high", "max"];
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(
+  readFileSync(join(__dirname, "..", "package.json"), "utf-8")
+);
+const PACKAGE_VERSION: string = pkg.version;
+
+const BASE_ICON_URL = `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${PACKAGE_VERSION}/assets`;
+
+function resolveIconUrl(env: Record<string, string | undefined>): string {
+  const mode = env.OPENCODE_NTFY_ICON_MODE === "light" ? "light" : "dark";
+
+  if (mode === "light" && env.OPENCODE_NTFY_ICON_LIGHT) {
+    return env.OPENCODE_NTFY_ICON_LIGHT;
+  }
+
+  if (mode === "dark" && env.OPENCODE_NTFY_ICON_DARK) {
+    return env.OPENCODE_NTFY_ICON_DARK;
+  }
+
+  return `${BASE_ICON_URL}/opencode-icon-${mode}.png`;
+}
 
 export function loadConfig(
   env: Record<string, string | undefined>
@@ -27,5 +54,6 @@ export function loadConfig(
     server: env.OPENCODE_NTFY_SERVER || "https://ntfy.sh",
     token: env.OPENCODE_NTFY_TOKEN,
     priority,
+    iconUrl: resolveIconUrl(env),
   };
 }

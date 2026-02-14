@@ -36,6 +36,9 @@ If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md
   - `OPENCODE_NTFY_SERVER` (optional, defaults to `https://ntfy.sh`) - the ntfy.sh server URL
   - `OPENCODE_NTFY_TOKEN` (optional) - bearer token for authentication
   - `OPENCODE_NTFY_PRIORITY` (optional, defaults to `default`) - global notification priority (min, low, default, high, max)
+  - `OPENCODE_NTFY_ICON_MODE` (optional, defaults to `dark`) - whether the target device uses `light` or `dark` mode
+  - `OPENCODE_NTFY_ICON_LIGHT` (optional) - custom icon URL override for light mode
+  - `OPENCODE_NTFY_ICON_DARK` (optional) - custom icon URL override for dark mode
 
 ### Custom Notification Commands
 
@@ -71,6 +74,40 @@ Commands are executed via the Bun `$` shell provided by the OpenCode plugin inpu
   5. Returns the trimmed stdout if the command succeeds
   6. Returns the fallback value if the command fails (non-zero exit, exception, etc.)
 
+### Notification Icons
+
+All notifications should include an icon displayed alongside the notification on supported ntfy.sh clients. The plugin bundles the official OpenCode branded PNG icons sourced from https://opencode.ai/brand and uses them by default.
+
+**Important:** ntfy.sh only supports JPEG and PNG images for icons (not SVG). All icon assets and default URLs must use PNG format.
+
+#### Bundled Icon Assets
+
+The light and dark variants of the OpenCode icon PNG are stored in the top-level `assets/` directory and checked into version control. This directory is **not** included in the published npm package -- the icons are accessed at runtime via their `raw.githubusercontent.com` URLs, so they do not need to be bundled.
+
+- `assets/opencode-icon-dark.png` - the dark mode icon (for devices using dark mode), sourced from https://opencode.ai/brand
+- `assets/opencode-icon-light.png` - the light mode icon (for devices using light mode), sourced from https://opencode.ai/brand
+
+#### Default Icon Behavior
+
+Since the ntfy.sh `X-Icon` header requires a publicly accessible URL (not a local file), the default icon URL should point to the raw PNG asset hosted on GitHub via `raw.githubusercontent.com`. The appropriate URL is selected based on the configured mode (light or dark).
+
+Default icon URLs are served from this repo's `assets/` directory via `raw.githubusercontent.com`, using the version tag that corresponds to the current package version. The version is read from `package.json` at runtime and the URL is constructed dynamically using the format `v${version}` (e.g., `v0.1.6`):
+
+- Dark mode (default): `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${version}/assets/opencode-icon-dark.png`
+- Light mode: `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${version}/assets/opencode-icon-light.png`
+
+#### Icon Environment Variables
+
+- `OPENCODE_NTFY_ICON_MODE` (optional, defaults to `dark`) - determines which icon variant to use. Must be explicitly set to `light` or `dark`. If unset or set to any other value, defaults to `dark`. This setting reflects whether the target device receiving push notifications uses light or dark mode.
+- `OPENCODE_NTFY_ICON_LIGHT` (optional) - a custom URL to use as the notification icon when `OPENCODE_NTFY_ICON_MODE` is `light`. When set, this overrides the default light mode icon URL. Must point to a JPEG or PNG image.
+- `OPENCODE_NTFY_ICON_DARK` (optional) - a custom URL to use as the notification icon when `OPENCODE_NTFY_ICON_MODE` is `dark`. When set, this overrides the default dark mode icon URL. Must point to a JPEG or PNG image.
+
+The icon resolution logic is:
+1. Determine the mode from `OPENCODE_NTFY_ICON_MODE` (default: `dark`).
+2. If the mode is `light` and `OPENCODE_NTFY_ICON_LIGHT` is set, use that URL.
+3. If the mode is `dark` and `OPENCODE_NTFY_ICON_DARK` is set, use that URL.
+4. Otherwise, use the default `raw.githubusercontent.com` PNG URL for the corresponding mode.
+
 ### Publishing via ntfy.sh
 
 Send notifications via HTTP POST:
@@ -81,6 +118,7 @@ Headers:
   Title: <title>
   Priority: <priority>
   Tags: <tags>
+  X-Icon: <resolved icon URL based on mode and environment variables>
   Authorization: Bearer <token>  (if token is set)
 Body: <message>
 ```
@@ -91,6 +129,9 @@ The `NotificationPayload` type should include an optional `priority` field. When
 
 ```
 opencode-ntfy.sh/
+  assets/
+    opencode-icon-light.png  # OpenCode icon for light mode (not published to npm)
+    opencode-icon-dark.png   # OpenCode icon for dark mode (not published to npm)
   src/
     index.ts          # Plugin entry point and export
     notify.ts         # ntfy.sh HTTP client

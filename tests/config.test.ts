@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { loadConfig } from "../src/config.js";
+
+const pkg = JSON.parse(
+  readFileSync(join(import.meta.dirname, "..", "package.json"), "utf-8")
+);
+const VERSION = pkg.version;
 
 describe("loadConfig", () => {
   it("should return a config object with the topic when OPENCODE_NTFY_TOPIC is set", () => {
@@ -44,5 +51,81 @@ describe("loadConfig", () => {
         OPENCODE_NTFY_PRIORITY: "invalid",
       })
     ).toThrow("OPENCODE_NTFY_PRIORITY");
+  });
+
+  it("should default iconUrl to dark mode GitHub raw URL using package version", () => {
+    const config = loadConfig({ OPENCODE_NTFY_TOPIC: "test" });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-dark.png`
+    );
+  });
+
+  it("should use light mode icon URL when OPENCODE_NTFY_ICON_MODE is light", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "light",
+    });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-light.png`
+    );
+  });
+
+  it("should use dark mode icon URL when OPENCODE_NTFY_ICON_MODE is dark", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "dark",
+    });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-dark.png`
+    );
+  });
+
+  it("should default to dark mode when OPENCODE_NTFY_ICON_MODE is an invalid value", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "neon",
+    });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-dark.png`
+    );
+  });
+
+  it("should use OPENCODE_NTFY_ICON_DARK override when mode is dark", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_DARK: "https://example.com/my-dark-icon.png",
+    });
+    expect(config.iconUrl).toBe("https://example.com/my-dark-icon.png");
+  });
+
+  it("should use OPENCODE_NTFY_ICON_LIGHT override when mode is light", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "light",
+      OPENCODE_NTFY_ICON_LIGHT: "https://example.com/my-light-icon.png",
+    });
+    expect(config.iconUrl).toBe("https://example.com/my-light-icon.png");
+  });
+
+  it("should ignore OPENCODE_NTFY_ICON_LIGHT when mode is dark", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "dark",
+      OPENCODE_NTFY_ICON_LIGHT: "https://example.com/my-light-icon.png",
+    });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-dark.png`
+    );
+  });
+
+  it("should ignore OPENCODE_NTFY_ICON_DARK when mode is light", () => {
+    const config = loadConfig({
+      OPENCODE_NTFY_TOPIC: "test",
+      OPENCODE_NTFY_ICON_MODE: "light",
+      OPENCODE_NTFY_ICON_DARK: "https://example.com/my-dark-icon.png",
+    });
+    expect(config.iconUrl).toBe(
+      `https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/v${VERSION}/assets/opencode-icon-light.png`
+    );
   });
 });
