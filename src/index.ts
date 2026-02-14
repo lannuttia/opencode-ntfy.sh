@@ -50,6 +50,20 @@ function buildVars(
   };
 }
 
+function eventType(event: { type: string }): string {
+  return event.type;
+}
+
+function hasPermissionProperties(
+  event: { properties?: unknown }
+): event is { properties: { permission?: string; patterns?: string[] } } {
+  const props = event.properties;
+  if (typeof props !== "object" || props === null) {
+    return false;
+  }
+  return true;
+}
+
 export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   if (!process.env.OPENCODE_NTFY_TOPIC) {
     return {};
@@ -83,13 +97,10 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           message: "An error has occurred. Check the session for details.",
           tags: "warning",
         });
-      } else if ((event.type as string) === "permission.asked") {
-        const props = (event as any).properties as {
-          permission?: string;
-          patterns?: string[];
-        };
-        const permissionType = props.permission || "";
-        const patterns = props.patterns?.join(", ") || "";
+      } else if (eventType(event) === "permission.asked" && hasPermissionProperties(event)) {
+        const permissionType = event.properties.permission || "";
+        const patternsArr = event.properties.patterns;
+        const patterns = Array.isArray(patternsArr) ? patternsArr.join(", ") : "";
         const time = new Date().toISOString();
         const vars = buildVars("permission.asked", time, {
           permission_type: permissionType,

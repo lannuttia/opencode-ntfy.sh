@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
-import { writeFileSync, unlinkSync, readdirSync } from "node:fs";
+import { writeFileSync, unlinkSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -55,6 +55,34 @@ void _check;
     } finally {
       unlinkSync(checkFile);
     }
+  });
+
+  it("should not contain type assertion casts (as) in src/ files", () => {
+    const srcDir = join(ROOT, "src");
+    const srcFiles = readdirSync(srcDir).filter(
+      (f) => f.endsWith(".ts") && !f.startsWith("_typecheck_")
+    );
+
+    const castPattern = /\bas\s+(any|unknown|string|{\s*[^}]*}|[A-Z]\w*)/g;
+    const violations: string[] = [];
+
+    for (const file of srcFiles) {
+      const content = readFileSync(join(srcDir, file), "utf-8");
+      const lines = content.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip import type statements (e.g. "import type { Foo } from ...")
+        if (line.trimStart().startsWith("import")) continue;
+        const matches = line.match(castPattern);
+        if (matches) {
+          for (const match of matches) {
+            violations.push(`${file}:${i + 1}: ${match}`);
+          }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 
   it("should type-check that sendNotification does not accept a fetchFn parameter", () => {

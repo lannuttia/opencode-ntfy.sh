@@ -128,3 +128,10 @@
 - [x] Remove dead code (`getProjectName`, unused `detail` variable)
 - [x] Update tests to assert spec-compliant defaults
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 17: Remove All Type Casts (Code Quality)
+
+- [ ] Remove `as string` and `as any` casts from `src/index.ts` — use a type guard helper to handle `permission.asked` events without type assertions
+- [ ] Remove `as any` and `as unknown` casts from `tests/plugin.test.ts` — build a fully-typed mock shell and event factories
+- [ ] Remove `as any` and `as unknown` casts from `tests/exec.test.ts` — build a fully-typed mock shell
+- [ ] Ensure all tests pass and package builds cleanly
