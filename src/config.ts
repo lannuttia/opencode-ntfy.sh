@@ -26,16 +26,8 @@ const BASE_ICON_URL = `https://raw.githubusercontent.com/lannuttia/opencode-ntfy
 
 function resolveIconUrl(env: Record<string, string | undefined>): string {
   const mode = env.OPENCODE_NTFY_ICON_MODE === "light" ? "light" : "dark";
-
-  if (mode === "light" && env.OPENCODE_NTFY_ICON_LIGHT) {
-    return env.OPENCODE_NTFY_ICON_LIGHT;
-  }
-
-  if (mode === "dark" && env.OPENCODE_NTFY_ICON_DARK) {
-    return env.OPENCODE_NTFY_ICON_DARK;
-  }
-
-  return `${BASE_ICON_URL}/opencode-icon-${mode}.png`;
+  const override = env[`OPENCODE_NTFY_ICON_${mode.toUpperCase()}`];
+  return override || `${BASE_ICON_URL}/opencode-icon-${mode}.png`;
 }
 
 export function loadConfig(
