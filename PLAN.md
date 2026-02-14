@@ -131,7 +131,10 @@
 
 ## Phase 17: Remove All Type Casts (Code Quality)
 
-- [ ] Remove `as string` and `as any` casts from `src/index.ts` — use a type guard helper to handle `permission.asked` events without type assertions
-- [ ] Remove `as any` and `as unknown` casts from `tests/plugin.test.ts` — build a fully-typed mock shell and event factories
-- [ ] Remove `as any` and `as unknown` casts from `tests/exec.test.ts` — build a fully-typed mock shell
-- [ ] Ensure all tests pass and package builds cleanly
+- [x] Remove `as string` and `as any` casts from `src/index.ts` — use a type guard helper to handle `permission.asked` events without type assertions
+- [x] Remove `as any` and `as unknown` casts from `tests/plugin.test.ts` — build a fully-typed mock shell and event factories
+- [x] Remove `as any` and `as unknown` casts from `tests/exec.test.ts` — build a fully-typed mock shell
+- [x] Extract shared `createMockShell` into `tests/mock-shell.ts` to eliminate duplication
+- [x] Add `fireEvent` helper for testing events not yet in the SDK's `Event` union (e.g., `permission.asked`)
+- [x] Add typecheck test enforcing no-cast rule in `tests/` files
+- [x] Ensure all tests pass and package builds cleanly
