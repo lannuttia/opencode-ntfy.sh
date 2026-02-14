@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { resolveField } from "../src/exec.js";
 import { createMockShell } from "./mock-shell.js";
 
@@ -16,11 +16,8 @@ describe("resolveField", () => {
   });
 
   it("should substitute template variables and return trimmed stdout", async () => {
-    let executedCommand = "";
-    const $ = createMockShell((cmd) => {
-      executedCommand = cmd;
-      return { stdout: "  custom title  \n", exitCode: 0 };
-    });
+    const handler = vi.fn(() => ({ stdout: "  custom title  \n", exitCode: 0 }));
+    const $ = createMockShell(handler);
 
     const result = await resolveField(
       $,
@@ -29,16 +26,13 @@ describe("resolveField", () => {
       "fallback"
     );
 
-    expect(executedCommand).toBe('echo "session.idle - 2026-01-01T00:00:00Z"');
+    expect(handler).toHaveBeenCalledWith('echo "session.idle - 2026-01-01T00:00:00Z"');
     expect(result).toBe("custom title");
   });
 
   it("should substitute unset variables with empty strings", async () => {
-    let executedCommand = "";
-    const $ = createMockShell((cmd) => {
-      executedCommand = cmd;
-      return { stdout: "result", exitCode: 0 };
-    });
+    const handler = vi.fn(() => ({ stdout: "result", exitCode: 0 }));
+    const $ = createMockShell(handler);
 
     const result = await resolveField(
       $,
@@ -47,16 +41,13 @@ describe("resolveField", () => {
       "fallback"
     );
 
-    expect(executedCommand).toBe('echo "session.idle "');
+    expect(handler).toHaveBeenCalledWith('echo "session.idle "');
     expect(result).toBe("result");
   });
 
   it("should substitute underscored variable names like ${permission_type}", async () => {
-    let executedCommand = "";
-    const $ = createMockShell((cmd) => {
-      executedCommand = cmd;
-      return { stdout: "file.write: config.json", exitCode: 0 };
-    });
+    const handler = vi.fn(() => ({ stdout: "file.write: config.json", exitCode: 0 }));
+    const $ = createMockShell(handler);
 
     const result = await resolveField(
       $,
@@ -65,7 +56,7 @@ describe("resolveField", () => {
       "fallback"
     );
 
-    expect(executedCommand).toBe('echo "file.write: config.json"');
+    expect(handler).toHaveBeenCalledWith('echo "file.write: config.json"');
     expect(result).toBe("file.write: config.json");
   });
 
