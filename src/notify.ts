@@ -24,11 +24,17 @@ export async function sendNotification(
     headers.Authorization = `Bearer ${config.token}`;
   }
 
-  const response = await fetch(url, {
+  const fetchOptions: RequestInit = {
     method: "POST",
     headers,
     body: payload.message,
-  });
+  };
+
+  if (config.fetchTimeout !== undefined) {
+    fetchOptions.signal = AbortSignal.timeout(config.fetchTimeout);
+  }
+
+  const response = await fetch(url, fetchOptions);
 
   if (!response.ok) {
     throw new Error(

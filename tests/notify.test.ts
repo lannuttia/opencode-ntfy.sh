@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { sendNotification } from "../src/notify.js";
 import type { NtfyConfig } from "../src/config.js";
@@ -13,6 +13,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
   resetCapturedRequest();
   server.resetHandlers();
+  vi.restoreAllMocks();
 });
 afterAll(() => server.close());
 
@@ -146,6 +147,55 @@ describe("sendNotification", () => {
     expect(capturedRequest!.headers.get("X-Icon")).toBe(
       "https://example.com/icon.png"
     );
+  });
+
+  it("should include AbortSignal.timeout when config.fetchTimeout is set", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "default",
+      iconUrl: "https://example.com/icon.png",
+      fetchTimeout: 10000,
+    };
+
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+    });
+
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    const callArgs = fetchSpy.mock.calls[0];
+    const requestInit = callArgs[1];
+    expect(requestInit).toBeDefined();
+    expect(requestInit!.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("should not include signal when config.fetchTimeout is not set", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "default",
+      iconUrl: "https://example.com/icon.png",
+    };
+
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+    });
+
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    const callArgs = fetchSpy.mock.calls[0];
+    const requestInit = callArgs[1];
+    expect(requestInit).toBeDefined();
+    expect(requestInit!.signal).toBeUndefined();
   });
 
   it("should throw when the server responds with a non-ok status", async () => {
