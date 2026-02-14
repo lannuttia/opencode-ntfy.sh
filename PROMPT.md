@@ -18,7 +18,8 @@ If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md
 
 ### Code Quality Rules
 
-- **No type casting.** Never use `as`, `as any`, `as unknown`, or similar type assertions. If the types don't align, fix the type definitions or use type guards, generics, or proper type narrowing instead.
+- **No type casting.** Never use `as`, `as any`, `as unknown`, or similar type assertions. If the types don't align, fix the type definitions or use type guards, generics, or proper type narrowing instead. This is enforced by ESLint via the `@typescript-eslint/consistent-type-assertions` rule with `assertionStyle: "never"`.
+- **Linting is required.** All source and test code must pass `npm run lint` before committing. The linter uses ESLint with typescript-eslint and is configured in `eslint.config.js`.
 
 ## Specifications
 
@@ -166,6 +167,7 @@ opencode-ntfy.sh/
     config.test.ts    # Tests for configuration loading
     plugin.test.ts    # Tests for the plugin hooks
     exec.test.ts      # Tests for command execution
+  eslint.config.js      # ESLint configuration
   package.json
   tsconfig.json
   vitest.config.ts
@@ -177,6 +179,7 @@ opencode-ntfy.sh/
 ### Tech Stack
 
 - TypeScript
+- ESLint with typescript-eslint for linting
 - Vitest for testing
 - No runtime dependencies beyond Node.js built-in `fetch`
 - Publishable as an npm package
