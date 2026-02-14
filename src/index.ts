@@ -5,10 +5,6 @@ import { resolveField } from "./exec.js";
 
 type BunShell = PluginInput["$"];
 
-function getProjectName(directory: string): string {
-  return directory.split("/").pop() || directory;
-}
-
 interface NotificationDefaults {
   title: string;
   message: string;
@@ -60,7 +56,6 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   }
 
   const config = loadConfig(process.env);
-  const project = getProjectName(input.directory);
   const $ = input.$;
 
   return {
@@ -100,9 +95,6 @@ export const plugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
           permission_type: permissionType,
           permission_patterns: patterns,
         });
-        const detail = permissionType
-          ? `\nPermission: ${permissionType}${patterns ? ` (${patterns})` : ""}`
-          : "";
 
         await resolveAndSend($, config, "PERMISSION", vars, {
           title: "Permission Asked",
