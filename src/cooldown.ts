@@ -2,15 +2,14 @@ import { parse, toSeconds } from "iso8601-duration";
 import { throttle, debounce } from "throttle-debounce";
 
 export function parseISO8601Duration(duration: string): number {
-  let parsed;
   try {
-    parsed = parse(duration);
+    const parsed = parse(duration);
+    return Math.round(toSeconds(parsed) * 1000);
   } catch {
     throw new Error(
       `Invalid ISO 8601 duration: "${duration}". Expected format like PT30S, PT5M, PT1H30M15S.`
     );
   }
-  return Math.round(toSeconds(parsed) * 1000);
 }
 
 export interface CooldownOptions {

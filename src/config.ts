@@ -14,7 +14,7 @@ export interface NtfyConfig {
   fetchTimeout?: number;
 }
 
-const VALID_PRIORITIES = ["min", "low", "default", "high", "max"];
+const VALID_PRIORITIES = ["min", "low", "default", "high", "max"] as const;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(
@@ -39,7 +39,7 @@ export function loadConfig(
   }
 
   const priority = env.OPENCODE_NTFY_PRIORITY || "default";
-  if (!VALID_PRIORITIES.includes(priority)) {
+  if (!VALID_PRIORITIES.some((p) => p === priority)) {
     throw new Error(
       `OPENCODE_NTFY_PRIORITY must be one of: ${VALID_PRIORITIES.join(", ")}`
     );
