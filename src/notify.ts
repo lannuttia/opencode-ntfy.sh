@@ -17,6 +17,7 @@ export async function sendNotification(
     Title: payload.title,
     Priority: payload.priority ?? config.priority,
     Tags: payload.tags,
+    "X-Icon": config.iconUrl,
   };
 
   if (config.token) {

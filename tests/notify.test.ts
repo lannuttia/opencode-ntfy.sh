@@ -24,6 +24,7 @@ describe("sendNotification", () => {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "default",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await sendNotification(config, {
@@ -48,6 +49,7 @@ describe("sendNotification", () => {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "default",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await sendNotification(config, {
@@ -68,6 +70,7 @@ describe("sendNotification", () => {
       server: "https://ntfy.sh",
       priority: "default",
       token: "my-secret-token",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await sendNotification(config, {
@@ -89,6 +92,7 @@ describe("sendNotification", () => {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "default",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await sendNotification(config, {
@@ -109,6 +113,7 @@ describe("sendNotification", () => {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "low",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await sendNotification(config, {
@@ -119,6 +124,28 @@ describe("sendNotification", () => {
 
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest!.headers.get("Priority")).toBe("low");
+  });
+
+  it("should include X-Icon header from config.iconUrl", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+    const config: NtfyConfig = {
+      topic: "my-topic",
+      server: "https://ntfy.sh",
+      priority: "default",
+      iconUrl: "https://example.com/icon.png",
+    };
+
+    await sendNotification(config, {
+      title: "Test",
+      message: "body",
+      tags: "tag",
+    });
+
+    expect(capturedRequest).not.toBeNull();
+    expect(capturedRequest!.headers.get("X-Icon")).toBe(
+      "https://example.com/icon.png"
+    );
   });
 
   it("should throw when the server responds with a non-ok status", async () => {
@@ -135,6 +162,7 @@ describe("sendNotification", () => {
       topic: "my-topic",
       server: "https://ntfy.sh",
       priority: "default",
+      iconUrl: "https://example.com/icon.png",
     };
 
     await expect(
