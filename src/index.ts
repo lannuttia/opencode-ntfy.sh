@@ -40,15 +40,9 @@ async function resolveAndSend(
 function buildVars(
   event: string,
   time: string,
-  extra: Partial<Record<"error" | "permission_type" | "permission_patterns", string>> = {}
+  extra: Record<string, string> = {}
 ): Record<string, string> {
-  return {
-    event,
-    time,
-    error: extra.error ?? "",
-    permission_type: extra.permission_type ?? "",
-    permission_patterns: extra.permission_patterns ?? "",
-  };
+  return { error: "", permission_type: "", permission_patterns: "", ...extra, event, time };
 }
 
 function hasPermissionProperties(
