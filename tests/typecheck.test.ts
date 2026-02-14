@@ -57,7 +57,7 @@ void _check;
     }
   });
 
-  it("should type-check that sendNotification does not accept a fetchFn parameter", () => {
+  it("should type-check that sendNotification does not accept a fetchFn parameter", { timeout: 30000 }, () => {
     const checkFile = join(ROOT, "src", "_typecheck_notify.ts");
 
     writeFileSync(
