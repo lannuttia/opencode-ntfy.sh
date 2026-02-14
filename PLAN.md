@@ -162,3 +162,11 @@
 - [x] Add default tag documentation alongside title and message defaults
 - [x] Fix title/message default table ordering for consistency (idle, error, permission)
 - [x] Update Node.js version prerequisite from v18+ to v20+
+
+## Phase 21: Replace Hand-Rolled Implementations with Third-Party Libraries
+
+- [x] Install `iso8601-duration` and `throttle-debounce` as runtime dependencies (with `@types/throttle-debounce` as dev dependency)
+- [x] Rewrite `parseISO8601Duration` in `src/cooldown.ts` to delegate to `iso8601-duration` (parse + toSeconds) instead of hand-rolled regex
+- [x] Rewrite `createCooldownGuard` in `src/cooldown.ts` to use `throttle` (leading edge) and `debounce` (trailing edge) from `throttle-debounce` instead of hand-rolled Map-based logic
+- [x] Preserve the same public API (`parseISO8601Duration`, `createCooldownGuard`, `CooldownGuard.shouldAllow`) and error message format
+- [x] Ensure all 88 tests pass, lint is clean, and package builds cleanly

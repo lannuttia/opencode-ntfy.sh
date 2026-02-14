@@ -199,24 +199,6 @@ Or in watch mode:
 npm run test:watch
 ```
 
-### Using a development build with OpenCode
-
-To use a local development build as a plugin, place or symlink the project
-directory into the OpenCode plugins folder:
-
-```sh
-# Build first
-npm run build
-
-# Project-level (applies to a single project)
-ln -s /path/to/opencode-ntfy.sh .opencode/plugins/opencode-ntfy.sh
-
-# Or global (applies to all projects)
-ln -s /path/to/opencode-ntfy.sh ~/.config/opencode/plugins/opencode-ntfy.sh
-```
-
-Then set the required environment variables and start OpenCode as usual.
-
 ## License
 
 MIT

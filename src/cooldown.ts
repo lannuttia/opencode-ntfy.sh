@@ -1,18 +1,16 @@
-const ISO8601_DURATION_PATTERN = /^PT(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?$/;
+import { parse, toSeconds } from "iso8601-duration";
+import { throttle, debounce } from "throttle-debounce";
 
 export function parseISO8601Duration(duration: string): number {
-  const match = ISO8601_DURATION_PATTERN.exec(duration);
-  if (!match) {
+  let parsed;
+  try {
+    parsed = parse(duration);
+  } catch {
     throw new Error(
       `Invalid ISO 8601 duration: "${duration}". Expected format like PT30S, PT5M, PT1H30M15S.`
     );
   }
-
-  const hours = parseFloat(match[1] || "0");
-  const minutes = parseFloat(match[2] || "0");
-  const seconds = parseFloat(match[3] || "0");
-
-  return Math.round((hours * 3600 + minutes * 60 + seconds) * 1000);
+  return Math.round(toSeconds(parsed) * 1000);
 }
 
 export interface CooldownOptions {
@@ -27,7 +25,31 @@ export interface CooldownGuard {
 export function createCooldownGuard(options: CooldownOptions): CooldownGuard {
   const cooldownMs = parseISO8601Duration(options.cooldown);
   const edge = options.edge ?? "leading";
-  const lastSeen = new Map<string, number>();
+  const gates = new Map<string, { allowed: boolean; trigger: () => void }>();
+
+  function getGate(eventType: string): { allowed: boolean; trigger: () => void } {
+    const existing = gates.get(eventType);
+    if (existing) {
+      return existing;
+    }
+
+    const gate = { allowed: false, trigger: (): void => {} };
+
+    if (edge === "leading") {
+      const throttled = throttle(cooldownMs, () => {
+        gate.allowed = true;
+      }, { noTrailing: true });
+      gate.trigger = throttled;
+    } else {
+      const debounced = debounce(cooldownMs, () => {
+        gate.allowed = true;
+      });
+      gate.trigger = debounced;
+    }
+
+    gates.set(eventType, gate);
+    return gate;
+  }
 
   return {
     shouldAllow(eventType: string): boolean {
@@ -35,30 +57,21 @@ export function createCooldownGuard(options: CooldownOptions): CooldownGuard {
         return true;
       }
 
-      const now = Date.now();
-      const last = lastSeen.get(eventType);
+      const gate = getGate(eventType);
 
       if (edge === "leading") {
-        if (last !== undefined && now - last <= cooldownMs) {
-          return false;
-        }
-        lastSeen.set(eventType, now);
-        return true;
+        gate.allowed = false;
+        gate.trigger();
+        return gate.allowed;
       }
 
       // trailing edge
-      if (last === undefined) {
-        lastSeen.set(eventType, now);
-        return false;
+      const wasAllowed = gate.allowed;
+      if (wasAllowed) {
+        gate.allowed = false;
       }
-
-      if (now - last <= cooldownMs) {
-        lastSeen.set(eventType, now);
-        return false;
-      }
-
-      lastSeen.set(eventType, now);
-      return true;
+      gate.trigger();
+      return wasAllowed;
     },
   };
 }

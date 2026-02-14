@@ -46,7 +46,7 @@ If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md
   - `OPENCODE_NTFY_ICON_DARK` (optional) -- custom icon URL override for dark mode
   - `OPENCODE_NTFY_COOLDOWN` (optional) -- ISO 8601 duration for notification cooldown (e.g., `PT30S`, `PT5M`). When set, duplicate notifications for the same event type are suppressed within the cooldown period. When not set, no rate limiting is applied.
   - `OPENCODE_NTFY_COOLDOWN_EDGE` (optional, defaults to `leading`) -- which edge of the cooldown window triggers the notification. `leading` sends the first notification immediately and suppresses duplicates for the cooldown period. `trailing` suppresses the first notification and allows one after the cooldown period of inactivity.
-  - `OPENCODE_NTFY_FETCH_TIMEOUT` (optional) -- ISO 8601 duration for the HTTP request timeout when calling the ntfy.sh server (e.g., `PT10S` for 10 seconds, `PT1M` for 1 minute). The duration is parsed using the same `parseISO8601Duration()` function from `src/cooldown.ts`. When set, the `fetch` call in `sendNotification` uses an `AbortSignal.timeout()` to enforce the timeout. When not set, no timeout is applied (the request uses the default `fetch` behavior).
+  - `OPENCODE_NTFY_FETCH_TIMEOUT` (optional) -- ISO 8601 duration for the HTTP request timeout when calling the ntfy.sh server (e.g., `PT10S` for 10 seconds, `PT1M` for 1 minute). The duration is parsed using the same `parseISO8601Duration()` function from `src/cooldown.ts` (which delegates to a third-party ISO 8601 duration library). When set, the `fetch` call in `sendNotification` uses an `AbortSignal.timeout()` to enforce the timeout. When not set, no timeout is applied (the request uses the default `fetch` behavior).
 
 ### Custom Notification Commands
 
@@ -154,7 +154,7 @@ The icon resolution logic is:
 
 The plugin supports configurable rate limiting to prevent notification spam when the agent rapidly cycles through states.
 
-- `OPENCODE_NTFY_COOLDOWN` accepts an ISO 8601 duration string (e.g., `PT30S` for 30 seconds, `PT5M` for 5 minutes). The duration is parsed by `src/cooldown.ts` via `parseISO8601Duration()`, which supports hours (`H`), minutes (`M`), seconds (`S`), and fractional seconds.
+- `OPENCODE_NTFY_COOLDOWN` accepts an ISO 8601 duration string (e.g., `PT30S` for 30 seconds, `PT5M` for 5 minutes). The duration is parsed by `src/cooldown.ts` using a small third-party ISO 8601 duration parsing library, which supports hours (`H`), minutes (`M`), seconds (`S`), and fractional seconds.
 - `OPENCODE_NTFY_COOLDOWN_EDGE` controls the throttling strategy:
   - `leading` (default): The first notification fires immediately. Subsequent notifications for the same event type are suppressed until the cooldown period elapses.
   - `trailing`: Notifications are suppressed until the cooldown period elapses since the last event of that type. Each new event resets the cooldown timer.
@@ -164,8 +164,8 @@ The plugin supports configurable rate limiting to prevent notification spam when
 
 The cooldown guard is implemented in `src/cooldown.ts` and exposes:
 
-- `parseISO8601Duration(duration: string): number` -- parses an ISO 8601 duration string and returns milliseconds
-- `createCooldownGuard(options: CooldownOptions): CooldownGuard` -- creates a stateful guard that tracks per-event-type cooldowns
+- `parseISO8601Duration(duration: string): number` -- parses an ISO 8601 duration string using a third-party library and returns milliseconds
+- `createCooldownGuard(options: CooldownOptions): CooldownGuard` -- creates a stateful guard that tracks per-event-type cooldowns using a third-party debounce/throttle library for leading/trailing edge behavior
 - `CooldownGuard.shouldAllow(eventType: string): boolean` -- returns whether a notification should be sent
 
 ### Publishing via ntfy.sh
@@ -199,7 +199,10 @@ The plugin must support all currently supported versions of Node.js (i.e., versi
 - TypeScript
 - ESLint with typescript-eslint for linting
 - Vitest for testing
-- No runtime dependencies beyond Node.js built-in `fetch`
+- Small third-party runtime dependencies are allowed and preferred for well-scoped problems. In particular:
+  - Use a small library for parsing ISO 8601 duration strings (e.g., `iso8601-duration` or similar) instead of hand-rolling a parser in `parseISO8601Duration()`.
+  - Use a small library for debouncing/throttling (e.g., `throttle-debounce`, `just-debounce-it`, `just-throttle`, or similar) instead of implementing leading/trailing cooldown logic manually.
+- Beyond the above, avoid unnecessary runtime dependencies. Node.js built-in `fetch` is used for HTTP requests.
 - Publishable as an npm package
 
 ### Project Structure
