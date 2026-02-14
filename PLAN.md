@@ -170,3 +170,11 @@
 - [x] Rewrite `createCooldownGuard` in `src/cooldown.ts` to use `throttle` (leading edge) and `debounce` (trailing edge) from `throttle-debounce` instead of hand-rolled Map-based logic
 - [x] Preserve the same public API (`parseISO8601Duration`, `createCooldownGuard`, `CooldownGuard.shouldAllow`) and error message format
 - [x] Ensure all 88 tests pass, lint is clean, and package builds cleanly
+
+## Phase 22: Code Simplification Refactoring
+
+- [x] Simplify `parseCooldownEdge` in `src/config.ts` — replace `for...of` loop over `VALID_COOLDOWN_EDGES` array with direct equality checks (`value === "leading" || value === "trailing"`), removing the `VALID_COOLDOWN_EDGES` constant
+- [x] Simplify `resolveIconUrl` in `src/config.ts` — consolidate two separate `if` branches (one for light, one for dark) into a single dynamic env var lookup using `env[\`OPENCODE_NTFY_ICON_${mode.toUpperCase()}\`]`
+- [x] Simplify `buildVars` in `src/index.ts` — replace manual `Partial<Record<...>>` destructuring with `?? ""` defaults with a spread-based approach using `Record<string, string>`
+- [x] Simplify cooldown guard creation in `src/index.ts` — replace `let` + `if` block with `const` + ternary, removing unused `CooldownGuard` type import
+- [x] Ensure all 88 tests pass, lint is clean, and package builds cleanly
