@@ -116,3 +116,15 @@
 - [x] Write test for `X-Icon` header in `tests/notify.test.ts`
 - [x] Write integration tests for icon header in `tests/plugin.test.ts` (default dark, light mode, custom dark URL)
 - [x] Ensure all tests pass and package builds cleanly
+
+## Phase 16: Conform Default Notification Content to Spec
+
+- [x] Change default titles to match spec: `"Agent Idle"`, `"Agent Error"`, `"Permission Asked"` (was `"${project} - Session Idle"`, etc.)
+- [x] Change default messages to match spec: simple descriptive strings (was multi-line event/project/time format)
+  - `session.idle`: `"The agent has finished and is waiting for input."`
+  - `session.error`: `"An error has occurred. Check the session for details."`
+  - `permission.asked`: `"The agent needs permission to continue. Review and respond."`
+- [x] Remove `permission.ask` hook — spec only uses the `event` hook for all three event types
+- [x] Remove dead code (`getProjectName`, unused `detail` variable)
+- [x] Update tests to assert spec-compliant defaults
+- [x] Ensure all tests pass and package builds cleanly
