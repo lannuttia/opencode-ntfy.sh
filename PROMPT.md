@@ -16,6 +16,10 @@ Build a TypeScript OpenCode plugin (`opencode-ntfy.sh`) that sends push notifica
 
 If there is a discrepancy between PLAN.md and this prompt, always update PLAN.md to match this prompt.
 
+### Code Quality Rules
+
+- **No type casting.** Never use `as`, `as any`, `as unknown`, or similar type assertions. If the types don't align, fix the type definitions or use type guards, generics, or proper type narrowing instead.
+
 ## Specifications
 
 ### Plugin Behavior

@@ -85,6 +85,34 @@ void _check;
     expect(violations).toEqual([]);
   });
 
+  it("should not contain type assertion casts (as) in tests/ files", () => {
+    const testsDir = join(ROOT, "tests");
+    const testFiles = readdirSync(testsDir).filter(
+      (f) => f.endsWith(".ts")
+    );
+
+    const castPattern = /\bas\s+(any|unknown|string|{\s*[^}]*}|[A-Z]\w*)/g;
+    const violations: string[] = [];
+
+    for (const file of testFiles) {
+      const content = readFileSync(join(testsDir, file), "utf-8");
+      const lines = content.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip import type statements (e.g. "import type { Foo } from ...")
+        if (line.trimStart().startsWith("import")) continue;
+        const matches = line.match(castPattern);
+        if (matches) {
+          for (const match of matches) {
+            violations.push(`${file}:${i + 1}: ${match}`);
+          }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it("should type-check that sendNotification does not accept a fetchFn parameter", () => {
     const checkFile = join(ROOT, "src", "_typecheck_notify.ts");
 
