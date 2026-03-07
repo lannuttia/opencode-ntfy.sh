@@ -339,17 +339,17 @@
   integrity sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==
 
 "@opencode-ai/plugin@^1.2.1":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@opencode-ai/plugin/-/plugin-1.2.10.tgz#e3b104e731f166447f0d1e4316c97df3a78931e6"
-  integrity sha512-Z1BMqNHnD8AGAEb+kUz0b2SOuiODwdQLdCA4aVGTXqkGzhiD44OVxr85MeoJ5AMTnnea9SnJ3jp9GAQ5riXA5g==
+  version "1.2.20"
+  resolved "https://registry.yarnpkg.com/@opencode-ai/plugin/-/plugin-1.2.20.tgz#c07707025b6f67a54f71ef6b7dc6f6a15a1b77c8"
+  integrity sha512-BE6TOXVxgF24g5QgtlogSY5B+/AmZJ3cYaVjHZhUVuAli9JEg4RblrbrK2rfgbyZBoZDpjBLGTYtIRTVmOccEA==
   dependencies:
-    "@opencode-ai/sdk" "1.2.10"
+    "@opencode-ai/sdk" "1.2.20"
     zod "4.1.8"
 
-"@opencode-ai/sdk@1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@opencode-ai/sdk/-/sdk-1.2.10.tgz#8bc058b8fe63caef8009a09a3bb2cbe25690e5a3"
-  integrity sha512-SyXcVqry2hitPVvQtvXOhqsWyFhSycG/+LTLYXrcq8AFmd9FR7dyBSDB3f5Ol6IPkYOegk8P2Eg2kKPNSNiKGw==
+"@opencode-ai/sdk@1.2.20":
+  version "1.2.20"
+  resolved "https://registry.yarnpkg.com/@opencode-ai/sdk/-/sdk-1.2.20.tgz#8c84bf40557feb50a412bc54f5339cfb293f2d1d"
+  integrity sha512-U5ROpG21D8jg9rkc1IgKAk1g5dn6X/rkOBfveupd0peSDO9n6VM9aikYccVLaMObxVqdjtG08IeQOFTPVS8ySQ==
 
 "@rollup/rollup-android-arm-eabi@4.57.1":
   version "4.57.1"
