@@ -339,17 +339,19 @@
   integrity sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==
 
 "@opencode-ai/plugin@^1.2.1":
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/@opencode-ai/plugin/-/plugin-1.3.3.tgz#af5490595a8828a342211df6fa0a8a4b6d6f878a"
-  integrity sha512-pxI4LanjnQb8sUd/zfQilzlGHyrdjmZuQ1XsUFbm+rij4yq0mUPtXcPGfuZJBEcGchKn57tA3/LB6RmipLQpXg==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@opencode-ai/plugin/-/plugin-1.4.3.tgz#eb16e1ec5a20265620c58104a97760be5837c47d"
+  integrity sha512-Ob/3tVSIeuMRJBr2O23RtrnC5djRe01Lglx+TwGEmjrH9yDBJ2tftegYLnNEjRoMuzITgq9LD8168p4pzv+U/A==
   dependencies:
-    "@opencode-ai/sdk" "1.3.3"
+    "@opencode-ai/sdk" "1.4.3"
     zod "4.1.8"
 
-"@opencode-ai/sdk@1.3.3":
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/@opencode-ai/sdk/-/sdk-1.3.3.tgz#93902d4b8b5ce6ab320d241ea85f19a3e6fdf6cc"
-  integrity sha512-qg7DwEVUpZArsYajs0DcaHqmIYB3EfHCuuTdMJir7Yc976DUWDfLR/5y9h8fKb9HAMJXe4TZkAIEr0/3OmK67g==
+"@opencode-ai/sdk@1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@opencode-ai/sdk/-/sdk-1.4.3.tgz#12873f29bd051e5baa8affdc7fa628dba1064b66"
+  integrity sha512-X0CAVbwoGAjTY2iecpWkx2B+GAa2jSaQKYpJ+xILopeF/OGKZUN15mjqci+L7cEuwLHV5wk3x2TStUOVCa5p0A==
+  dependencies:
+    cross-spawn "7.0.6"
 
 "@rollup/rollup-android-arm-eabi@4.57.1":
   version "4.57.1"
@@ -816,7 +818,7 @@ cookie@^1.0.2:
   resolved "https://registry.npmjs.org/cookie/-/cookie-1.1.1.tgz"
   integrity sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==
 
-cross-spawn@^7.0.6:
+cross-spawn@7.0.6, cross-spawn@^7.0.6:
   version "7.0.6"
   resolved "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz"
   integrity sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==
