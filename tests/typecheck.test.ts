@@ -6,17 +6,17 @@ import { join } from "node:path";
 const ROOT = join(import.meta.dirname, "..");
 
 describe("type conformance", () => {
-  it("should type-check that the default export satisfies the @opencode-ai/plugin Plugin type", { timeout: 30000 }, () => {
+  it("should type-check that the default export satisfies the @opencode/plugin Plugin type", { timeout: 30000 }, () => {
     const checkFile = join(ROOT, "src", "_typecheck_plugin.ts");
 
     writeFileSync(
       checkFile,
       `
-import type { Plugin } from "@opencode-ai/plugin";
+import { Plugin } from "@opencode/plugin";
 import plugin from "./index.js";
 
 // This assignment will fail at compile time if plugin does not match the Plugin type.
-const _check: Plugin = plugin;
+const _check: Plugin.Plugin = plugin;
 void _check;
 `
     );
@@ -57,13 +57,12 @@ void _check;
     }
   });
 
-  it("should type-check that createNtfyBackend returns NotificationBackend with optional $", { timeout: 30000 }, () => {
+  it("should type-check that createNtfyBackend returns NotificationBackend", { timeout: 30000 }, () => {
     const checkFile = join(ROOT, "src", "_typecheck_backend.ts");
 
     writeFileSync(
       checkFile,
       `
-import type { PluginInput } from "@opencode-ai/plugin";
 import type { NotificationBackend } from "opencode-notification-sdk";
 import { createNtfyBackend } from "./backend.js";
 import type { NtfyBackendConfig } from "./config.js";
@@ -75,14 +74,9 @@ const config: NtfyBackendConfig = {
   iconUrl: "https://example.com/icon.png",
 };
 
-// createNtfyBackend should return a NotificationBackend without $
-const _check1: NotificationBackend = createNtfyBackend(config);
-void _check1;
-
-// createNtfyBackend should also accept $ as second argument
-declare const shell: PluginInput["$"];
-const _check2: NotificationBackend = createNtfyBackend(config, shell);
-void _check2;
+// createNtfyBackend should return a NotificationBackend
+const _check: NotificationBackend = createNtfyBackend(config);
+void _check;
 `
     );
 

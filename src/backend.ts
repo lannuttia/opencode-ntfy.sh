@@ -1,10 +1,10 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import { execSync } from "node:child_process";
 import type {
   NotificationBackend,
   NotificationContext,
   NotificationEvent,
 } from "opencode-notification-sdk";
-import { renderTemplate, execTemplate } from "opencode-notification-sdk";
+import { renderTemplate } from "opencode-notification-sdk";
 import type {
   NtfyBackendConfig,
   ContentTemplate,
@@ -36,13 +36,21 @@ function isValueTemplate(
   return "value" in template;
 }
 
-async function resolveContent(
+function execTemplate(
+  command: string,
+  context: NotificationContext
+): string {
+  const rendered = renderTemplate(command, context);
+  const stdout = execSync(rendered, { encoding: "utf-8" });
+  return stdout.trim();
+}
+
+function resolveContent(
   templateMap: ContentTemplateMap | undefined,
   event: NotificationEvent,
   defaults: Record<NotificationEvent, string>,
-  context: NotificationContext,
-  $?: PluginInput["$"]
-): Promise<string> {
+  context: NotificationContext
+): string {
   const template = templateMap?.[event];
   if (!template) {
     return defaults[event] ?? "";
@@ -51,35 +59,27 @@ async function resolveContent(
     return renderTemplate(template.value, context);
   }
   // command template
-  if (!$) {
-    throw new Error(
-      `Command template configured for ${event} but no shell ($) was provided`
-    );
-  }
-  return execTemplate($, template.command, context);
+  return execTemplate(template.command, context);
 }
 
 export function createNtfyBackend(
-  config: NtfyBackendConfig,
-  $?: PluginInput["$"]
+  config: NtfyBackendConfig
 ): NotificationBackend {
   return {
     async send(context: NotificationContext): Promise<void> {
       const url = `${config.server}/${config.topic}`;
 
-      const title = await resolveContent(
+      const title = resolveContent(
         config.title,
         context.event,
         DEFAULT_TITLES,
-        context,
-        $
+        context
       );
-      const message = await resolveContent(
+      const message = resolveContent(
         config.message,
         context.event,
         DEFAULT_MESSAGES,
-        context,
-        $
+        context
       );
       const tags = DEFAULT_TAGS[context.event] ?? "";
 

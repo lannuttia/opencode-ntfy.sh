@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse, delay } from "msw";
-import { execSync } from "node:child_process";
 import type { NotificationContext } from "opencode-notification-sdk";
-import type { PluginInput } from "@opencode-ai/plugin";
 import { createNtfyBackend } from "../src/backend.js";
 import type { NtfyBackendConfig } from "../src/config.js";
 import {
@@ -11,99 +9,6 @@ import {
   getCapturedRequest,
   resetCapturedRequest,
 } from "./msw-helpers.js";
-
-/**
- * Creates a minimal shell function that satisfies the PluginInput["$"]
- * interface for testing. Uses child_process.execSync to execute commands.
- *
- * This is intentionally typed loosely since we only need it to satisfy
- * the SDK's execCommand usage pattern: $ `${{ raw: command }}`.nothrow().quiet()
- */
-function createTestShell(): PluginInput["$"] {
-  function getExitCode(err: unknown): number {
-    if (err !== null && typeof err === "object" && "status" in err && typeof err.status === "number") {
-      return err.status;
-    }
-    return 1;
-  }
-
-  // We construct the shell function manually to match BunShell's interface.
-  // The function itself is the tagged template literal handler.
-  // We add static methods as properties on the function object.
-  // The type is structurally compatible with BunShell.
-  function shellFn(
-    strings: TemplateStringsArray,
-    ...expressions: Array<{ raw?: string; toString(): string }>
-  ): ReturnType<PluginInput["$"]> {
-    // Reconstruct the command from tagged template literal parts
-    let command = "";
-    for (let i = 0; i < strings.length; i++) {
-      command += strings[i];
-      if (i < expressions.length) {
-        const expr = expressions[i];
-        if (typeof expr === "object" && expr !== null && "raw" in expr && typeof expr.raw === "string") {
-          command += expr.raw;
-        } else {
-          command += String(expr);
-        }
-      }
-    }
-    command = command.trim();
-
-    let stdout = "";
-    let exitCode = 0;
-    try {
-      stdout = execSync(command, { encoding: "utf-8" });
-    } catch (err: unknown) {
-      exitCode = getExitCode(err);
-    }
-
-    const output = {
-      stdout: Buffer.from(stdout),
-      stderr: Buffer.from(""),
-      exitCode,
-      text: () => stdout,
-      json: () => JSON.parse(stdout),
-      arrayBuffer: () => Buffer.from(stdout).buffer,
-      bytes: () => new Uint8Array(Buffer.from(stdout)),
-      blob: () => new Blob([stdout]),
-    };
-
-    const resolved = Promise.resolve(output);
-
-    // Build a chainable promise object matching BunShellPromise
-    const chainable: ReturnType<PluginInput["$"]> = {
-      then: resolved.then.bind(resolved),
-      catch: resolved.catch.bind(resolved),
-      finally: resolved.finally.bind(resolved),
-      [Symbol.toStringTag]: "Promise",
-      stdin: new WritableStream(),
-      cwd: () => chainable,
-      env: () => chainable,
-      quiet: () => chainable,
-      lines: async function* () { yield stdout; },
-      text: () => Promise.resolve(stdout),
-      json: () => Promise.resolve(JSON.parse(stdout)),
-      arrayBuffer: () => Promise.resolve(Buffer.from(stdout).buffer),
-      blob: () => Promise.resolve(new Blob([stdout])),
-      nothrow: () => chainable,
-      throws: () => chainable,
-    };
-
-    return chainable;
-  }
-
-  // Add required static properties of BunShell
-  shellFn.braces = (pattern: string) => [pattern];
-  shellFn.escape = (input: string) => input;
-  shellFn.env = (): PluginInput["$"] => testShell;
-  shellFn.cwd = (): PluginInput["$"] => testShell;
-  shellFn.nothrow = (): PluginInput["$"] => testShell;
-  shellFn.throws = (): PluginInput["$"] => testShell;
-
-  const testShell: PluginInput["$"] = shellFn;
-  return testShell;
-}
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
@@ -475,14 +380,12 @@ describe("createNtfyBackend", () => {
     it("should use a command title template with execTemplate", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
-      const testShell = createTestShell();
       const backend = createNtfyBackend(
         makeConfig({
           title: {
             "session.idle": { command: "echo Agent finished in {project}" },
           },
-        }),
-        testShell
+        })
       );
       await backend.send(makeContext({ event: "session.idle" }));
 
@@ -496,7 +399,6 @@ describe("createNtfyBackend", () => {
     it("should use a command message template with execTemplate", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
-      const testShell = createTestShell();
       const backend = createNtfyBackend(
         makeConfig({
           message: {
@@ -504,8 +406,7 @@ describe("createNtfyBackend", () => {
               command: "echo Error: {error} in {project}",
             },
           },
-        }),
-        testShell
+        })
       );
       await backend.send(
         makeContext({
