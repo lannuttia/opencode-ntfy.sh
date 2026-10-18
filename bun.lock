@@ -6,7 +6,7 @@
       "name": "opencode-ntfy.sh",
       "dependencies": {
         "iso8601-duration": "^2.1.3",
-        "opencode-notification-sdk": "^2.0.0",
+        "opencode-notification-sdk": "2.0.1",
       },
       "devDependencies": {
         "@eslint/js": "^9.0.0",
@@ -752,7 +752,7 @@
 
     "open": ["open@11.0.4", "", { "dependencies": { "default-browser": "^5.5.1", "define-lazy-prop": "^3.0.0", "is-in-ssh": "^1.0.0", "is-inside-container": "^1.0.0", "powershell-utils": "^0.2.1", "wsl-utils": "^1.0.0" } }, "sha512-++Zlftm0kVLPmzC06t6epuWmcRMDbI4z5P3NNX979WA/k23+NtSOynEGzsVfZwguKw2mi5umVgnBlJQMwRz4Pg=="],
 
-    "opencode-notification-sdk": ["opencode-notification-sdk@2.0.0", "", { "peerDependencies": { "@opencode/plugin": "*" } }, "sha512-jy+q7x1LI+qprWwdOVqR9JxGmjyAzR23IgcW+pMmRxWrnfM1s0blwAt9GM7ZcdRUOymKELHL8OOjoQlrcR4z1Q=="],
+    "opencode-notification-sdk": ["opencode-notification-sdk@2.0.1", "", { "peerDependencies": { "@opencode/plugin": "*" } }, "sha512-LcaPyNrM+3llD09e+G/NbmR+KKrR7A3uvUznCRQdPyfAzYG7btGIKXH4P/XM73Gza96OStCDvfzmPCYnqvgpvw=="],
 
     "optionator": ["optionator@0.9.4", "", { "dependencies": { "deep-is": "^0.1.3", "fast-levenshtein": "^2.0.6", "levn": "^0.4.1", "prelude-ls": "^1.2.1", "type-check": "^0.4.0", "word-wrap": "^1.2.5" } }, "sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g=="],
 
