@@ -1,6 +1,6 @@
 {
   "name": "opencode-ntfy.sh",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "OpenCode plugin that sends push notifications via ntfy.sh",
   "type": "module",
   "main": "./dist/index.js",
