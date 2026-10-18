@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { $ } from "bun";
 import { http, HttpResponse, delay } from "msw";
 import type { NotificationContext } from "opencode-notification-sdk";
 import { createNtfyBackend } from "../src/backend.js";
@@ -385,7 +386,8 @@ describe("createNtfyBackend", () => {
           title: {
             "session.idle": { command: "echo Agent finished in {project}" },
           },
-        })
+        }),
+        $
       );
       await backend.send(makeContext({ event: "session.idle" }));
 
@@ -406,7 +408,8 @@ describe("createNtfyBackend", () => {
               command: "echo Error: {error} in {project}",
             },
           },
-        })
+        }),
+        $
       );
       await backend.send(
         makeContext({

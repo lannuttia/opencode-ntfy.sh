@@ -55,6 +55,6 @@
   ],
   "dependencies": {
     "iso8601-duration": "^2.1.3",
-    "opencode-notification-sdk": "^1.1.0"
+    "opencode-notification-sdk": "^2.0.0"
   }
 }

@@ -1,15 +1,28 @@
-import { execSync } from "node:child_process";
 import type {
   NotificationBackend,
   NotificationContext,
   NotificationEvent,
 } from "opencode-notification-sdk";
-import { renderTemplate } from "opencode-notification-sdk";
+import { renderTemplate, execTemplate } from "opencode-notification-sdk";
 import type {
   NtfyBackendConfig,
   ContentTemplate,
   ContentTemplateMap,
 } from "./config.js";
+
+// Minimal Bun shell interface — structurally compatible with the BunShell type
+// in opencode-notification-sdk, which is not re-exported from the package index.
+export interface BunShellOutput {
+  readonly exitCode: number;
+  text(): string;
+}
+export interface BunShellPromise extends Promise<BunShellOutput> {
+  nothrow(): BunShellPromise;
+  quiet(): BunShellPromise;
+}
+export interface BunShell {
+  (strings: TemplateStringsArray, ...expressions: unknown[]): BunShellPromise;
+}
 
 const DEFAULT_TITLES: Record<NotificationEvent, string> = {
   "session.idle": "Agent Idle",
@@ -36,21 +49,13 @@ function isValueTemplate(
   return "value" in template;
 }
 
-function execTemplate(
-  command: string,
-  context: NotificationContext
-): string {
-  const rendered = renderTemplate(command, context);
-  const stdout = execSync(rendered, { encoding: "utf-8" });
-  return stdout.trim();
-}
-
-function resolveContent(
+async function resolveContent(
   templateMap: ContentTemplateMap | undefined,
   event: NotificationEvent,
   defaults: Record<NotificationEvent, string>,
-  context: NotificationContext
-): string {
+  context: NotificationContext,
+  $?: BunShell
+): Promise<string> {
   const template = templateMap?.[event];
   if (!template) {
     return defaults[event] ?? "";
@@ -59,27 +64,35 @@ function resolveContent(
     return renderTemplate(template.value, context);
   }
   // command template
-  return execTemplate(template.command, context);
+  if (!$) {
+    throw new Error(
+      `Command template configured for ${event} but no shell ($) was provided`
+    );
+  }
+  return execTemplate($, template.command, context);
 }
 
 export function createNtfyBackend(
-  config: NtfyBackendConfig
+  config: NtfyBackendConfig,
+  $?: BunShell
 ): NotificationBackend {
   return {
     async send(context: NotificationContext): Promise<void> {
       const url = `${config.server}/${config.topic}`;
 
-      const title = resolveContent(
+      const title = await resolveContent(
         config.title,
         context.event,
         DEFAULT_TITLES,
-        context
+        context,
+        $
       );
-      const message = resolveContent(
+      const message = await resolveContent(
         config.message,
         context.event,
         DEFAULT_MESSAGES,
-        context
+        context,
+        $
       );
       const tags = DEFAULT_TAGS[context.event] ?? "";
 
