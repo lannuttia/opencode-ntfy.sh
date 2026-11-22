@@ -15,18 +15,16 @@ long-running task, walk away, and get notified when it needs your attention.
 ## How It Works
 
 This plugin is a **notification backend** for the `opencode-notification-sdk`.
-The SDK handles common notification logic:
+The SDK loads and validates the config file (`enabled` and `events`) and provides
+the template helpers. The plugin itself owns the rest:
 
-- **Event routing** -- classifying OpenCode events into notification types
+- **Event routing** -- classifying OpenCode V2 events into notification types
 - **Subagent suppression** -- silently suppressing notifications from sub-agent
-  (child) sessions for `session.idle` and `session.error` events
-- **Configuration loading** -- reading and parsing the config file, handling the
-  `enabled` and `events` sections
-
-This plugin is responsible for the ntfy.sh-specific concerns: producing
-notification content (title and message), formatting and sending the HTTP POST
-request, validating ntfy-specific configuration, and resolving the notification
-icon URL.
+  (child) sessions for idle and error events
+- **Deduplication** -- sending at most one push per OpenCode event id
+- **ntfy delivery** -- producing notification content (title and message),
+  formatting and sending the HTTP POST request, validating ntfy-specific
+  configuration, and resolving the notification icon URL
 
 ## Notifications
 
@@ -36,6 +34,20 @@ The plugin sends notifications for three events:
   input.
 - **Session Error** -- The session encountered an error.
 - **Permission Asked** -- The agent needs permission to perform an action.
+
+On OpenCode V2, completion is observed from `session.execution.succeeded`. The
+older `session.status` event with `status.type === "idle"` is still handled for
+compatibility with earlier V2 releases. Errors come from
+`session.execution.failed`, and prompts from `permission.asked`.
+
+### Deduplication
+
+Global plugin config is loaded once per OpenCode location, and each instance
+receives the same server events. To avoid four identical pushes for one
+completion, the plugin claims each OpenCode event id in a shared temp directory
+(`$TMPDIR/opencode-ntfy-dedupe`, or `/tmp/opencode-ntfy-dedupe`). Claims expire
+after one hour, stale files are pruned on load, and any filesystem error fails
+open so a notification is never silently lost.
 
 ### Default Tags
 
@@ -50,14 +62,14 @@ Each event type has a default tag corresponding to an
 
 ## Install
 
-Add the package name to the `plugin` array in your OpenCode config file.
+Add the package name to the `plugins` array in your OpenCode config file.
 
 opencode.json:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-ntfy.sh"]
+  "plugins": ["opencode-ntfy.sh"]
 }
 ```
 
