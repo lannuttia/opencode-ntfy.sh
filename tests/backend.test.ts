@@ -18,9 +18,13 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
+type TestContext = Omit<NotificationContext, "metadata"> & {
+  metadata: NotificationContext["metadata"] & { sessionTitle?: string };
+};
+
 function makeContext(
-  overrides: Partial<NotificationContext> = {}
-): NotificationContext {
+  overrides: Partial<TestContext> = {}
+): TestContext {
   return {
     event: "session.idle",
     metadata: {
@@ -88,6 +92,73 @@ describe("createNtfyBackend", () => {
     const captured = getCapturedRequest();
     expect(captured).not.toBeNull();
     expect(captured!.headers.get("Title")).toBe("Permission Asked");
+  });
+
+  it("should include the session title in the idle notification title", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+    const backend = createNtfyBackend(makeConfig());
+    await backend.send(
+      makeContext({
+        metadata: {
+          sessionId: "sess-123",
+          sessionTitle: "Fix login flow",
+          projectName: "my-project",
+          timestamp: "2026-01-01T00:00:00.000Z",
+        },
+      })
+    );
+
+    const captured = getCapturedRequest();
+    expect(captured).not.toBeNull();
+    expect(captured!.headers.get("Title")).toBe(
+      "Agent Idle: Fix login flow"
+    );
+  });
+
+  it("should include the session title in error and permission titles", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+    const backend = createNtfyBackend(makeConfig());
+    const metadata = {
+      sessionId: "sess-123",
+      sessionTitle: "Fix login flow",
+      projectName: "my-project",
+      timestamp: "2026-01-01T00:00:00.000Z",
+    };
+
+    await backend.send(makeContext({ event: "session.error", metadata }));
+    expect(getCapturedRequest()!.headers.get("Title")).toBe(
+      "Agent Error: Fix login flow"
+    );
+
+    resetCapturedRequest();
+    await backend.send(makeContext({ event: "permission.asked", metadata }));
+    expect(getCapturedRequest()!.headers.get("Title")).toBe(
+      "Permission Asked: Fix login flow"
+    );
+  });
+
+  it("should trim the session title and fall back when it is blank", async () => {
+    server.use(captureHandler("https://ntfy.sh/my-topic"));
+    const backend = createNtfyBackend(makeConfig());
+    const metadata = {
+      sessionId: "sess-123",
+      projectName: "my-project",
+      timestamp: "2026-01-01T00:00:00.000Z",
+    };
+
+    await backend.send(
+      makeContext({ metadata: { ...metadata, sessionTitle: "  Fix login  " } })
+    );
+    expect(getCapturedRequest()!.headers.get("Title")).toBe(
+      "Agent Idle: Fix login"
+    );
+
+    resetCapturedRequest();
+    await backend.send(
+      makeContext({ metadata: { ...metadata, sessionTitle: "   " } })
+    );
+    expect(getCapturedRequest()!.headers.get("Title")).toBe("Agent Idle");
   });
 
   it("should produce idle message body for session.idle events", async () => {
@@ -378,6 +449,34 @@ describe("createNtfyBackend", () => {
       expect(captured!.headers.get("Title")).toBe("my-project: Agent Idle");
     });
 
+    it("should support session_title in value templates", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(
+        makeConfig({
+          title: {
+            "session.idle": { value: "{session_title}: {event}" },
+          },
+        })
+      );
+      await backend.send(
+        makeContext({
+          metadata: {
+            sessionId: "sess-123",
+            sessionTitle: "Fix login flow",
+            projectName: "my-project",
+            timestamp: "2026-01-01T00:00:00.000Z",
+          },
+        })
+      );
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Title")).toBe(
+        "Fix login flow: session.idle"
+      );
+    });
+
     it("should use a value message template with renderTemplate substitution", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
@@ -479,6 +578,33 @@ describe("createNtfyBackend", () => {
       expect(captured!.headers.get("Title")).toBe(
         "Agent finished in my-project"
       );
+    });
+
+    it("should support session_title in command templates", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(
+        makeConfig({
+          title: {
+            "session.idle": { command: "echo {session_title}" },
+          },
+        }),
+        $
+      );
+      await backend.send(
+        makeContext({
+          metadata: {
+            sessionId: "sess-123",
+            sessionTitle: "Fix login flow",
+            projectName: "my-project",
+            timestamp: "2026-01-01T00:00:00.000Z",
+          },
+        })
+      );
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Title")).toBe("Fix login flow");
     });
 
     it("should use a command message template with execTemplate", async () => {

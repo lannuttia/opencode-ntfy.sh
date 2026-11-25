@@ -196,6 +196,7 @@ Each per-event object must contain exactly one of `value` or `command`.
 | `{time}` | ISO 8601 timestamp |
 | `{project}` | Project directory basename |
 | `{session_id}` | Session ID (empty if unavailable) |
+| `{session_title}` | Session title (empty if unavailable) |
 | `{error}` | Error message (empty if not an error event) |
 | `{permission_type}` | Permission type (empty if not a permission event) |
 | `{permission_patterns}` | Comma-separated patterns (empty if not a permission event) |
@@ -207,9 +208,12 @@ defaults are used:
 
 | Event | Default Title | Default Message |
 |---|---|---|
-| `session.idle` | `Agent Idle` | `The agent has finished and is waiting for input.` |
-| `session.error` | `Agent Error` | `An error has occurred. Check the session for details.` |
-| `permission.asked` | `Permission Asked` | `The agent needs permission to continue. Review and respond.` |
+| `session.idle` | `Agent Idle: {session_title}` | `The agent has finished and is waiting for input.` |
+| `session.error` | `Agent Error: {session_title}` | `An error has occurred. Check the session for details.` |
+| `permission.asked` | `Permission Asked: {session_title}` | `The agent needs permission to continue. Review and respond.` |
+
+If the session title is unavailable or blank, the default title is used without
+the `: {session_title}` suffix.
 
 ### Example Configurations
 
@@ -252,8 +256,8 @@ Full configuration:
     "priority": "default",
     "token": "{file:~/.secrets/ntfy-token}",
     "title": {
-      "session.idle": { "value": "{project}: Agent Idle" },
-      "session.error": { "value": "{project}: Agent Error" }
+      "session.idle": { "value": "{project}: Agent Idle — {session_title}" },
+      "session.error": { "value": "{project}: Agent Error — {session_title}" }
     },
     "message": {
       "session.error": { "value": "Error in {project}: {error}" }

@@ -8,6 +8,9 @@ import { getBackendConfig, loadConfig } from "opencode-notification-sdk";
 import { createNtfyBackend } from "./backend.js";
 import { parseNtfyBackendConfig } from "./config.js";
 import { createEventDeduplicator } from "./dedupe.js";
+import { lookupSession, type SessionSummary } from "./session.js";
+
+type NtfyEventMetadata = EventMetadata & { sessionTitle?: string };
 
 const config = loadConfig("ntfy");
 const backend = createNtfyBackend(
@@ -32,8 +35,8 @@ function eventId(event: unknown): string | undefined {
 function metadata(
   sessionId: string,
   projectName: string,
-  extra: Partial<EventMetadata> = {},
-): EventMetadata {
+  extra: Partial<NtfyEventMetadata> = {},
+): NtfyEventMetadata {
   return {
     sessionId,
     projectName,
@@ -42,17 +45,10 @@ function metadata(
   };
 }
 
-async function isSubagent(
-  ctx: { session: { get: (input: { sessionID: string }) => Promise<{ parentID?: string }> } },
-  sessionId: string,
-): Promise<boolean> {
-  if (!sessionId) return false;
-  try {
-    const session = await ctx.session.get({ sessionID: sessionId });
-    return Boolean(session.parentID);
-  } catch {
-    return false; // fail open, like the upstream SDK
-  }
+function sessionMetadata(
+  session: SessionSummary | undefined,
+): Partial<NtfyEventMetadata> {
+  return session?.title ? { sessionTitle: session.title } : {};
 }
 
 export default Plugin.define({
@@ -65,7 +61,7 @@ export default Plugin.define({
 
     const send = async (
       event: NotificationEvent,
-      meta: EventMetadata,
+      meta: NtfyEventMetadata,
       id: string | undefined,
     ): Promise<void> => {
       if (id !== undefined && !dedupe.claim(id)) return;
@@ -93,21 +89,30 @@ export default Plugin.define({
             data.status.type === "idle")
         ) {
           if (!enabled("session.idle")) continue;
-          if (await isSubagent(ctx, sessionId)) continue;
-          await send("session.idle", metadata(sessionId, projectName), id);
+          const session = await lookupSession(ctx, sessionId);
+          if (session?.parentID) continue;
+          await send(
+            "session.idle",
+            metadata(sessionId, projectName, sessionMetadata(session)),
+            id,
+          );
           continue;
         }
 
         if (type === "session.execution.failed") {
           if (!enabled("session.error")) continue;
-          if (await isSubagent(ctx, sessionId)) continue;
+          const session = await lookupSession(ctx, sessionId);
+          if (session?.parentID) continue;
           const error =
             isRecord(data.error) && typeof data.error.message === "string"
               ? data.error.message
               : undefined;
           await send(
             "session.error",
-            metadata(sessionId, projectName, error ? { error } : {}),
+            metadata(sessionId, projectName, {
+              ...sessionMetadata(session),
+              ...(error ? { error } : {}),
+            }),
             id,
           );
           continue;
@@ -115,6 +120,7 @@ export default Plugin.define({
 
         if (type === "permission.asked") {
           if (!enabled("permission.asked")) continue;
+          const session = await lookupSession(ctx, sessionId);
           const patterns = Array.isArray(data.resources)
             ? data.resources.filter(
                 (resource): resource is string => typeof resource === "string",
@@ -123,6 +129,7 @@ export default Plugin.define({
           await send(
             "permission.asked",
             metadata(sessionId, projectName, {
+              ...sessionMetadata(session),
               permissionType:
                 typeof data.action === "string" ? data.action : "",
               permissionPatterns: patterns,

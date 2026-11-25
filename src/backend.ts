@@ -3,7 +3,7 @@ import type {
   NotificationContext,
   NotificationEvent,
 } from "opencode-notification-sdk";
-import { renderTemplate, execTemplate } from "opencode-notification-sdk";
+import { execCommand } from "opencode-notification-sdk";
 import type {
   NtfyBackendConfig,
   ContentTemplate,
@@ -49,12 +49,47 @@ function isValueTemplate(
   return "value" in template;
 }
 
+function sessionTitle(context: NotificationContext): string {
+  if (!("sessionTitle" in context.metadata)) return "";
+  const value: unknown = context.metadata.sessionTitle;
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function renderNtfyTemplate(
+  template: string,
+  context: NotificationContext,
+): string {
+  const variables: Record<string, string> = {
+    event: context.event,
+    time: context.metadata.timestamp,
+    project: context.metadata.projectName,
+    session_id: context.metadata.sessionId,
+    session_title: sessionTitle(context),
+    error: context.metadata.error ?? "",
+    permission_type: context.metadata.permissionType ?? "",
+    permission_patterns: context.metadata.permissionPatterns?.join(",") ?? "",
+  };
+
+  return template.replace(
+    /\{(\w+)\}/g,
+    (_match, key: string) => variables[key] ?? "",
+  );
+}
+
+function withSessionTitle(
+  defaultTitle: string,
+  context: NotificationContext,
+): string {
+  const title = sessionTitle(context);
+  return title ? `${defaultTitle}: ${title}` : defaultTitle;
+}
+
 function resolveClickUrl(
   config: NtfyBackendConfig,
   context: NotificationContext,
 ): string {
   if (config.click !== undefined) {
-    return renderTemplate(config.click, context);
+    return renderNtfyTemplate(config.click, context);
   }
 
   const sessionId = context.metadata.sessionId.trim();
@@ -75,7 +110,7 @@ async function resolveContent(
     return defaults[event] ?? "";
   }
   if (isValueTemplate(template)) {
-    return renderTemplate(template.value, context);
+    return renderNtfyTemplate(template.value, context);
   }
   // command template
   if (!$) {
@@ -83,7 +118,7 @@ async function resolveContent(
       `Command template configured for ${event} but no shell ($) was provided`
     );
   }
-  return execTemplate($, template.command, context);
+  return execCommand($, renderNtfyTemplate(template.command, context));
 }
 
 export function createNtfyBackend(
@@ -97,7 +132,13 @@ export function createNtfyBackend(
       const title = await resolveContent(
         config.title,
         context.event,
-        DEFAULT_TITLES,
+        {
+          ...DEFAULT_TITLES,
+          [context.event]: withSessionTitle(
+            DEFAULT_TITLES[context.event],
+            context,
+          ),
+        },
         context,
         $
       );
