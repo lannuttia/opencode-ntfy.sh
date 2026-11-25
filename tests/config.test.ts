@@ -153,6 +153,30 @@ describe("parseNtfyBackendConfig", () => {
     ).toThrow("Invalid ISO 8601 duration");
   });
 
+  it("should default click to undefined", () => {
+    const config = parseNtfyBackendConfig({ topic: "test" });
+    expect(config.click).toBeUndefined();
+  });
+
+  it("should parse a custom click URL template", () => {
+    const config = parseNtfyBackendConfig({
+      topic: "test",
+      click: "opencode://session/{session_id}",
+    });
+    expect(config.click).toBe("opencode://session/{session_id}");
+  });
+
+  it("should allow an empty click URL to disable the tap action", () => {
+    const config = parseNtfyBackendConfig({ topic: "test", click: "" });
+    expect(config.click).toBe("");
+  });
+
+  it("should throw when click is not a string", () => {
+    expect(() =>
+      parseNtfyBackendConfig({ topic: "test", click: 123 })
+    ).toThrow("click");
+  });
+
   describe("title templates", () => {
     it("should parse a value template for session.idle", () => {
       const config = parseNtfyBackendConfig({
@@ -319,6 +343,7 @@ describe("JSON Schema", () => {
     expect(backendProps).toContain("priority");
     expect(backendProps).toContain("icon");
     expect(backendProps).toContain("fetchTimeout");
+    expect(backendProps).toContain("click");
     expect(backendProps).toContain("title");
     expect(backendProps).toContain("message");
   });

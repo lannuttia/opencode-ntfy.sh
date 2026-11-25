@@ -177,6 +177,89 @@ describe("createNtfyBackend", () => {
     );
   });
 
+  describe("click links", () => {
+    it("should deep link to the OpenCode session by default", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(makeConfig());
+      await backend.send(makeContext());
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Click")).toBe(
+        "opencode://session/sess-123"
+      );
+    });
+
+    it("should URL-encode the session ID in the default link", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(makeConfig());
+      await backend.send(
+        makeContext({
+          metadata: {
+            sessionId: "sess/a b?c=d",
+            projectName: "my-project",
+            timestamp: "2026-01-01T00:00:00.000Z",
+          },
+        })
+      );
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Click")).toBe(
+        "opencode://session/sess%2Fa%20b%3Fc%3Dd"
+      );
+    });
+
+    it("should launch OpenCode when the session ID is unavailable", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(makeConfig());
+      await backend.send(
+        makeContext({
+          metadata: {
+            sessionId: "",
+            projectName: "my-project",
+            timestamp: "2026-01-01T00:00:00.000Z",
+          },
+        })
+      );
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Click")).toBe("opencode://");
+    });
+
+    it("should render a custom click URL template", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(
+        makeConfig({
+          click: "opencode://session/{session_id}?project={project}",
+        })
+      );
+      await backend.send(makeContext());
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Click")).toBe(
+        "opencode://session/sess-123?project=my-project"
+      );
+    });
+
+    it("should omit the Click header when click is an empty string", async () => {
+      server.use(captureHandler("https://ntfy.sh/my-topic"));
+
+      const backend = createNtfyBackend(makeConfig({ click: "" }));
+      await backend.send(makeContext());
+
+      const captured = getCapturedRequest();
+      expect(captured).not.toBeNull();
+      expect(captured!.headers.get("Click")).toBeNull();
+    });
+  });
+
   it("should not include Authorization header when token is not set", async () => {
     server.use(captureHandler("https://ntfy.sh/my-topic"));
 

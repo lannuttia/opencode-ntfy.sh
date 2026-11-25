@@ -49,6 +49,20 @@ function isValueTemplate(
   return "value" in template;
 }
 
+function resolveClickUrl(
+  config: NtfyBackendConfig,
+  context: NotificationContext,
+): string {
+  if (config.click !== undefined) {
+    return renderTemplate(config.click, context);
+  }
+
+  const sessionId = context.metadata.sessionId.trim();
+  return sessionId
+    ? `opencode://session/${encodeURIComponent(sessionId)}`
+    : "opencode://";
+}
+
 async function resolveContent(
   templateMap: ContentTemplateMap | undefined,
   event: NotificationEvent,
@@ -95,12 +109,14 @@ export function createNtfyBackend(
         $
       );
       const tags = DEFAULT_TAGS[context.event] ?? "";
+      const click = resolveClickUrl(config, context);
 
       const headers: Record<string, string> = {
         Title: title,
         Priority: config.priority,
         Tags: tags,
         "X-Icon": config.iconUrl,
+        ...(click ? { Click: click } : {}),
         ...(config.token
           ? { Authorization: `Bearer ${config.token}` }
           : {}),

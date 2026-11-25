@@ -23,8 +23,9 @@ the template helpers. The plugin itself owns the rest:
   (child) sessions for idle and error events
 - **Deduplication** -- sending at most one push per OpenCode event id
 - **ntfy delivery** -- producing notification content (title and message),
-  formatting and sending the HTTP POST request, validating ntfy-specific
-  configuration, and resolving the notification icon URL
+  formatting and sending the HTTP POST request, adding OpenCode tap-action deep
+  links, validating ntfy-specific configuration, and resolving the notification
+  icon URL
 
 ## Notifications
 
@@ -59,6 +60,25 @@ Each event type has a default tag corresponding to an
 | `session.idle` | `hourglass_done` | ⌛ |
 | `session.error` | `warning` | ⚠️ |
 | `permission.asked` | `lock` | 🔒 |
+
+### Notification Tap Actions
+
+Each notification includes an ntfy `Click` URL. By default, tapping it opens
+`opencode://session/<sessionID>`. OpenCode Desktop builds with session deep-link
+support open that exact session; older builds may only launch or focus OpenCode.
+If an event has no session ID, the link falls back to `opencode://`.
+
+Set `backend.click` to use a different URL. It supports the same template
+variables as titles and messages, and an empty string disables the tap action:
+
+```json
+{
+  "backend": {
+    "topic": "my-opencode-notifications",
+    "click": "opencode://session/{session_id}"
+  }
+}
+```
 
 ## Install
 
@@ -118,6 +138,7 @@ The `backend` object contains all ntfy.sh-specific settings:
 | `backend.icon.variant.light` | `string` | No | -- | Custom icon URL override for light mode. |
 | `backend.icon.variant.dark` | `string` | No | -- | Custom icon URL override for dark mode. |
 | `backend.fetchTimeout` | `string` | No | -- | ISO 8601 duration for the HTTP request timeout (e.g., `PT10S`). |
+| `backend.click` | `string` | No | `opencode://session/{session_id}` | URL opened when the notification is tapped. Supports template variables; an empty string disables the tap action. |
 | `backend.title` | `object` | No | (see defaults) | Title configuration per event type. |
 | `backend.title.<event>` | `object` | No | (see defaults) | Content template for the notification title. Must contain exactly one of `value` or `command`. |
 | `backend.title.<event>.value` | `string` | No | -- | A template string rendered with `{var_name}` substitution. |

@@ -90,6 +90,10 @@
           "pattern": "^P",
           "description": "ISO 8601 duration for the HTTP request timeout when calling the ntfy.sh server (e.g., 'PT10S' for 10 seconds)."
         },
+        "click": {
+          "type": "string",
+          "description": "URL opened when the notification is tapped. Supports the same template variables as title and message. Defaults to opencode://session/{session_id}, or opencode:// when no session ID is available. Set to an empty string to disable the tap action."
+        },
         "title": {
           "type": "object",
           "description": "Title configuration per event type. Each key is an event type and the value specifies how to produce the notification title.",
