@@ -182,8 +182,8 @@ The notification title and message are configurable per event type via
 (`session.idle`, `session.error`, `permission.asked`), and the value specifies
 how to produce the content:
 
-- **`value`** -- A template string with `{var_name}` placeholders, resolved via
-  the SDK's `renderTemplate`. No shell execution.
+- **`value`** -- A template string with `{var_name}` placeholders, resolved by
+  the plugin's template renderer. No shell execution.
 - **`command`** -- A template string with `{var_name}` placeholders, resolved
   and then executed as a shell command. The trimmed stdout is used as the
   content.
