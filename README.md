@@ -8,25 +8,26 @@
 An [OpenCode](https://opencode.ai) notification backend plugin for
 [ntfy.sh](https://ntfy.sh). Built on the
 [`opencode-notification-sdk`](https://www.npmjs.com/package/opencode-notification-sdk),
-this plugin delivers push notifications to your phone or desktop when your AI
-coding session finishes, encounters an error, or needs permission. Start a
-long-running task, walk away, and get notified when it needs your attention.
+this plugin delivers session-aware push notifications to your phone or desktop
+when your AI coding session finishes, encounters an error, or needs permission.
+Titles identify the session, and tapping a notification can return directly to
+it in OpenCode. Start a long-running task, walk away, and get notified when it
+needs your attention.
 
 ## How It Works
 
 This plugin is a **notification backend** for the `opencode-notification-sdk`.
-The SDK handles common notification logic:
+The SDK loads and validates the config file (`enabled` and `events`). The plugin
+itself owns the rest:
 
-- **Event routing** -- classifying OpenCode events into notification types
+- **Event routing** -- classifying OpenCode V2 events into notification types
 - **Subagent suppression** -- silently suppressing notifications from sub-agent
-  (child) sessions for `session.idle` and `session.error` events
-- **Configuration loading** -- reading and parsing the config file, handling the
-  `enabled` and `events` sections
-
-This plugin is responsible for the ntfy.sh-specific concerns: producing
-notification content (title and message), formatting and sending the HTTP POST
-request, validating ntfy-specific configuration, and resolving the notification
-icon URL.
+  (child) sessions for idle and error events
+- **Deduplication** -- sending at most one push per OpenCode event id
+- **ntfy delivery** -- producing notification content (title and message),
+  formatting and sending the HTTP POST request, adding OpenCode tap-action deep
+  links, validating ntfy-specific configuration, and resolving the notification
+  icon URL
 
 ## Notifications
 
@@ -36,6 +37,20 @@ The plugin sends notifications for three events:
   input.
 - **Session Error** -- The session encountered an error.
 - **Permission Asked** -- The agent needs permission to perform an action.
+
+On OpenCode V2, completion is observed from `session.execution.succeeded`. The
+older `session.status` event with `status.type === "idle"` is still handled for
+compatibility with earlier V2 releases. Errors come from
+`session.execution.failed`, and prompts from `permission.asked`.
+
+### Deduplication
+
+Global plugin config is loaded once per OpenCode location, and each instance
+receives the same server events. To avoid four identical pushes for one
+completion, the plugin claims each OpenCode event id in a shared temp directory
+(`$TMPDIR/opencode-ntfy-dedupe`, or `/tmp/opencode-ntfy-dedupe`). Claims expire
+after one hour, stale files are pruned on load, and any filesystem error fails
+open so a notification is never silently lost.
 
 ### Default Tags
 
@@ -48,16 +63,35 @@ Each event type has a default tag corresponding to an
 | `session.error` | `warning` | ⚠️ |
 | `permission.asked` | `lock` | 🔒 |
 
+### Notification Tap Actions
+
+Each notification includes an ntfy `Click` URL. By default, tapping it opens
+`opencode://session/<sessionID>`. OpenCode Desktop builds with session deep-link
+support open that exact session; older builds may only launch or focus OpenCode.
+If an event has no session ID, the link falls back to `opencode://`.
+
+Set `backend.click` to use a different URL. It supports the same template
+variables as titles and messages, and an empty string disables the tap action:
+
+```json
+{
+  "backend": {
+    "topic": "my-opencode-notifications",
+    "click": "opencode://session/{session_id}"
+  }
+}
+```
+
 ## Install
 
-Add the package name to the `plugin` array in your OpenCode config file.
+Add the package name to the `plugins` array in your OpenCode config file.
 
 opencode.json:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-ntfy.sh"]
+  "plugins": ["opencode-ntfy.sh"]
 }
 ```
 
@@ -106,6 +140,7 @@ The `backend` object contains all ntfy.sh-specific settings:
 | `backend.icon.variant.light` | `string` | No | -- | Custom icon URL override for light mode. |
 | `backend.icon.variant.dark` | `string` | No | -- | Custom icon URL override for dark mode. |
 | `backend.fetchTimeout` | `string` | No | -- | ISO 8601 duration for the HTTP request timeout (e.g., `PT10S`). |
+| `backend.click` | `string` | No | `opencode://session/{session_id}` | URL opened when the notification is tapped. Supports template variables; an empty string disables the tap action. |
 | `backend.title` | `object` | No | (see defaults) | Title configuration per event type. |
 | `backend.title.<event>` | `object` | No | (see defaults) | Content template for the notification title. Must contain exactly one of `value` or `command`. |
 | `backend.title.<event>.value` | `string` | No | -- | A template string rendered with `{var_name}` substitution. |
@@ -147,8 +182,8 @@ The notification title and message are configurable per event type via
 (`session.idle`, `session.error`, `permission.asked`), and the value specifies
 how to produce the content:
 
-- **`value`** -- A template string with `{var_name}` placeholders, resolved via
-  the SDK's `renderTemplate`. No shell execution.
+- **`value`** -- A template string with `{var_name}` placeholders, resolved by
+  the plugin's template renderer. No shell execution.
 - **`command`** -- A template string with `{var_name}` placeholders, resolved
   and then executed as a shell command. The trimmed stdout is used as the
   content.
@@ -163,6 +198,7 @@ Each per-event object must contain exactly one of `value` or `command`.
 | `{time}` | ISO 8601 timestamp |
 | `{project}` | Project directory basename |
 | `{session_id}` | Session ID (empty if unavailable) |
+| `{session_title}` | Session title (empty if unavailable) |
 | `{error}` | Error message (empty if not an error event) |
 | `{permission_type}` | Permission type (empty if not a permission event) |
 | `{permission_patterns}` | Comma-separated patterns (empty if not a permission event) |
@@ -174,9 +210,12 @@ defaults are used:
 
 | Event | Default Title | Default Message |
 |---|---|---|
-| `session.idle` | `Agent Idle` | `The agent has finished and is waiting for input.` |
-| `session.error` | `Agent Error` | `An error has occurred. Check the session for details.` |
-| `permission.asked` | `Permission Asked` | `The agent needs permission to continue. Review and respond.` |
+| `session.idle` | `Agent Idle: {session_title}` | `The agent has finished and is waiting for input.` |
+| `session.error` | `Agent Error: {session_title}` | `An error has occurred. Check the session for details.` |
+| `permission.asked` | `Permission Asked: {session_title}` | `The agent needs permission to continue. Review and respond.` |
+
+If the session title is unavailable or blank, the default title is used without
+the `: {session_title}` suffix.
 
 ### Example Configurations
 
@@ -219,8 +258,8 @@ Full configuration:
     "priority": "default",
     "token": "{file:~/.secrets/ntfy-token}",
     "title": {
-      "session.idle": { "value": "{project}: Agent Idle" },
-      "session.error": { "value": "{project}: Agent Error" }
+      "session.idle": { "value": "{project}: Agent Idle — {session_title}" },
+      "session.error": { "value": "{project}: Agent Error — {session_title}" }
     },
     "message": {
       "session.error": { "value": "Error in {project}: {error}" }

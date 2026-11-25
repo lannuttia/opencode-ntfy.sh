@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/lannuttia/opencode-ntfy.sh/main/notification-ntfy.schema.json",
   "title": "opencode-ntfy.sh Configuration",
-  "description": "Configuration file for the opencode-ntfy.sh plugin, which sends push notifications via ntfy.sh during OpenCode sessions. Located at ~/.config/opencode/notification-ntfy.json.",
+  "description": "Configuration file for the opencode-ntfy.sh plugin, which sends session-aware push notifications via ntfy.sh during OpenCode sessions, including session titles and OpenCode deep links. Located at ~/.config/opencode/notification-ntfy.json.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -90,9 +90,13 @@
           "pattern": "^P",
           "description": "ISO 8601 duration for the HTTP request timeout when calling the ntfy.sh server (e.g., 'PT10S' for 10 seconds)."
         },
+        "click": {
+          "type": "string",
+          "description": "URL opened when the notification is tapped. Supports the same template variables as title and message. Defaults to opencode://session/{session_id}, or opencode:// when no session ID is available. Set to an empty string to disable the tap action."
+        },
         "title": {
           "type": "object",
-          "description": "Title configuration per event type. Each key is an event type and the value specifies how to produce the notification title.",
+          "description": "Title configuration per event type. Each key is an event type and the value specifies how to produce the notification title. Defaults include the session title when available.",
           "additionalProperties": false,
           "properties": {
             "session.idle": {
@@ -148,7 +152,7 @@
           "properties": {
             "value": {
               "type": "string",
-              "description": "A template string rendered via renderTemplate. Supports {var_name} placeholders."
+              "description": "A template string rendered with variable substitution. Supports {var_name} placeholders, including {session_title}."
             }
           }
         },
@@ -157,7 +161,7 @@
           "properties": {
             "command": {
               "type": "string",
-              "description": "A template string rendered via renderTemplate, then executed as a shell command. The trimmed stdout is used as the value."
+              "description": "A template string rendered with variable substitution, including {session_title}, then executed as a shell command. The trimmed stdout is used as the value."
             }
           }
         }

@@ -25,6 +25,7 @@ export interface NtfyBackendConfig {
   priority: string;
   iconUrl: string;
   fetchTimeout?: number;
+  click?: string;
   title?: ContentTemplateMap;
   message?: ContentTemplateMap;
 }
@@ -116,6 +117,12 @@ export function parseNtfyBackendConfig(
       ? parseISO8601Duration(raw.fetchTimeout)
       : undefined;
 
+  // Optional: URL opened when the notification is tapped
+  if (raw.click !== undefined && typeof raw.click !== "string") {
+    throw new Error("Backend config 'click' must be a string");
+  }
+  const click = typeof raw.click === "string" ? raw.click : undefined;
+
   // Optional: title and message content templates
   const title = isRecord(raw.title)
     ? parseContentTemplateMap(raw.title, "title")
@@ -124,7 +131,17 @@ export function parseNtfyBackendConfig(
     ? parseContentTemplateMap(raw.message, "message")
     : undefined;
 
-  return { topic, server, token, priority, iconUrl, fetchTimeout, title, message };
+  return {
+    topic,
+    server,
+    token,
+    priority,
+    iconUrl,
+    fetchTimeout,
+    click,
+    title,
+    message,
+  };
 }
 
 function isValidEvent(key: string): key is NotificationEvent {
