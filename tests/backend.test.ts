@@ -423,7 +423,7 @@ describe("createNtfyBackend", () => {
   });
 
   describe("value templates", () => {
-    it("should use a value title template with renderTemplate substitution", async () => {
+    it("should use a value title template with variable substitution", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
       const backend = createNtfyBackend(
@@ -477,7 +477,7 @@ describe("createNtfyBackend", () => {
       );
     });
 
-    it("should use a value message template with renderTemplate substitution", async () => {
+    it("should use a value message template with variable substitution", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
       const backend = createNtfyBackend(
@@ -554,13 +554,13 @@ describe("createNtfyBackend", () => {
 
       const captured = getCapturedRequest();
       expect(captured).not.toBeNull();
-      // {unknown_var} is replaced with empty string by renderTemplate
+      // {unknown_var} is replaced with an empty string by template rendering
       expect(captured!.body).toBe("my-project--idle");
     });
   });
 
   describe("command templates", () => {
-    it("should use a command title template with execTemplate", async () => {
+    it("should execute a command title template", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
       const backend = createNtfyBackend(
@@ -607,7 +607,7 @@ describe("createNtfyBackend", () => {
       expect(captured!.headers.get("Title")).toBe("Fix login flow");
     });
 
-    it("should use a command message template with execTemplate", async () => {
+    it("should execute a command message template", async () => {
       server.use(captureHandler("https://ntfy.sh/my-topic"));
 
       const backend = createNtfyBackend(

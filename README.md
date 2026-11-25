@@ -8,15 +8,17 @@
 An [OpenCode](https://opencode.ai) notification backend plugin for
 [ntfy.sh](https://ntfy.sh). Built on the
 [`opencode-notification-sdk`](https://www.npmjs.com/package/opencode-notification-sdk),
-this plugin delivers push notifications to your phone or desktop when your AI
-coding session finishes, encounters an error, or needs permission. Start a
-long-running task, walk away, and get notified when it needs your attention.
+this plugin delivers session-aware push notifications to your phone or desktop
+when your AI coding session finishes, encounters an error, or needs permission.
+Titles identify the session, and tapping a notification can return directly to
+it in OpenCode. Start a long-running task, walk away, and get notified when it
+needs your attention.
 
 ## How It Works
 
 This plugin is a **notification backend** for the `opencode-notification-sdk`.
-The SDK loads and validates the config file (`enabled` and `events`) and provides
-the template helpers. The plugin itself owns the rest:
+The SDK loads and validates the config file (`enabled` and `events`). The plugin
+itself owns the rest:
 
 - **Event routing** -- classifying OpenCode V2 events into notification types
 - **Subagent suppression** -- silently suppressing notifications from sub-agent
